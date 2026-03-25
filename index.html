@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#4f46e5"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="StudyApp"/>
+  <link rel="manifest" href="manifest.json"/>
+  <title>📚 Smart Study App – Class 10</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--primary:#4f46e5;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--bg:#f1f5f9;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:16px}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+    .app-header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:16px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(79,70,229,.3)}
+    .back-btn{background:rgba(255,255,255,.2);border:none;color:white;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .header-title{font-size:17px;font-weight:700;flex:1}
+    .breadcrumb{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+    .screen{display:none;padding:20px;max-width:640px;margin:0 auto}
+    .screen.active{display:block}
+    .hero{background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:20px;padding:28px 24px;color:white;margin-bottom:24px;text-align:center}
+    .hero h1{font-size:22px;font-weight:800;margin:10px 0 6px}
+    .hero p{font-size:13px;opacity:.85;line-height:1.5}
+    .free-badge{background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;display:inline-block;margin-top:10px}
+    .subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .subject-card{background:white;border-radius:var(--radius);padding:22px 14px;text-align:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:all .2s;border:2px solid transparent}
+    .subject-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .subject-icon{font-size:44px;margin-bottom:10px}
+    .subject-name{font-size:13px;font-weight:700}
+    .subject-count{font-size:11px;color:var(--muted);margin-top:4px}
+    .list-item{background:white;border-radius:12px;padding:16px 18px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:all .2s;border:1px solid var(--border)}
+    .list-item:hover{border-color:var(--primary);transform:translateX(3px)}
+    .list-icon{font-size:26px;width:42px;text-align:center;flex-shrink:0}
+    .list-text{flex:1}
+    .list-text h3{font-size:15px;font-weight:600}
+    .list-text p{font-size:12px;color:var(--muted);margin-top:2px}
+    .list-arrow{color:var(--muted);font-size:18px;flex-shrink:0}
+    .chap-badge{background:var(--primary);color:white;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+    .qtype-grid{display:grid;gap:12px;margin-top:8px}
+    .qtype-card{border-radius:var(--radius);padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.1);color:white}
+    .qtype-card:hover{transform:scale(1.02)}
+    .qtype-card.mcq{background:linear-gradient(135deg,#4f46e5,#7c3aed)}
+    .qtype-card.two{background:linear-gradient(135deg,#059669,#10b981)}
+    .qtype-card.five{background:linear-gradient(135deg,#d97706,#f59e0b)}
+    .qtype-icon{font-size:34px;flex-shrink:0}
+    .qtype-info h3{font-size:16px;font-weight:700}
+    .qtype-info p{font-size:12px;opacity:.85;margin-top:3px}
+    .question-card,.qa-card{background:white;border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--border)}
+    .q-num{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+    .q-text{font-size:15px;font-weight:600;line-height:1.5;margin-bottom:14px}
+    .options-grid{display:grid;gap:8px}
+    .opt-btn{padding:12px 14px;border-radius:10px;border:2px solid var(--border);background:white;text-align:left;cursor:pointer;font-size:14px;font-weight:500;transition:all .2s;display:flex;gap:10px;align-items:flex-start;line-height:1.4;width:100%}
+    .opt-label{font-weight:700;color:var(--muted);min-width:20px;flex-shrink:0}
+    .opt-btn:hover:not(:disabled){border-color:var(--primary);background:#eef2ff}
+    .opt-btn.correct{border-color:var(--success);background:#d1fae5}
+    .opt-btn.wrong{border-color:var(--danger);background:#fee2e2}
+    .opt-btn.show-correct{border-color:var(--success);background:#d1fae5}
+    .opt-btn:disabled{cursor:default}
+    .result-badge{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600}
+    .result-badge.c{background:#d1fae5;color:#065f46}
+    .result-badge.w{background:#fee2e2;color:#991b1b}
+    .score-bar{background:white;border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .score-circle{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7c3aed);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;flex-shrink:0}
+    .score-num{font-size:18px;font-weight:800}
+    .score-denom{font-size:10px;opacity:.8}
+    .score-info h3{font-size:15px;font-weight:700}
+    .score-info p{font-size:12px;color:var(--muted);margin-top:2px}
+    .show-ans-btn{background:var(--primary);color:white;border:none;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;width:100%}
+    .show-ans-btn.shown{background:var(--success)}
+    .ans-box{margin-top:14px;padding:14px;background:#f8fafc;border-radius:10px;border-left:4px solid var(--primary);font-size:14px;line-height:1.8;display:none}
+    .ans-box.visible{display:block}
+    .section-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 12px}
+    .action-row{display:flex;gap:10px;margin-top:16px;margin-bottom:20px}
+    .action-btn{flex:1;padding:12px;border-radius:12px;border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+    .action-btn.p{background:var(--primary);color:white}
+    .action-btn.s{background:white;color:var(--text);border:1px solid var(--border)}
+    .chap-info-card{background:white;border-radius:var(--radius);padding:20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:20px}
+  </style>
+</head>
+<body>
+<div class="app-header" id="appHeader">
+  <button class="back-btn" id="backBtn" onclick="goBack()" style="display:none">←</button>
+  <div style="flex:1;min-width:0">
+    <div class="header-title" id="headerTitle">📚 Smart Study App</div>
+    <div class="breadcrumb" id="breadcrumb">Class 10 NCERT • All Subjects</div>
+  </div>
+</div>
+
+<div class="screen active" id="homeScreen">
+  <div class="hero">
+    <div style="font-size:48px">🎓</div>
+    <h1>Smart Study App</h1>
+    <p>Class 10 NCERT • 5 Subjects • 89 Chapters<br/>1000+ Questions with Detailed Answers</p>
+    <span class="free-badge">✅ 100% FREE — No API Key Needed • No Internet Required</span>
+  </div>
+  <div class="section-title">Choose Your Subject</div>
+  <div class="subject-grid" id="subjectGrid"></div>
+</div>
+
+<div class="screen" id="bookScreen">
+  <div class="section-title" id="bookSectionTitle">Select Book</div>
+  <div id="bookList"></div>
+</div>
+
+<div class="screen" id="chapterScreen">
+  <div class="section-title" id="chapSectionTitle">Select Chapter</div>
+  <div id="chapterList"></div>
+</div>
+
+<div class="screen" id="qtypeScreen">
+  <div class="chap-info-card">
+    <div style="font-size:32px">📖</div>
+    <div style="font-weight:700;font-size:16px;margin-top:8px" id="qtypeChapName"></div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px">Choose the type of questions</div>
+  </div>
+  <div class="qtype-grid">
+    <div class="qtype-card mcq" onclick="loadQs('mcq')">
+      <div class="qtype-icon">🔵</div>
+      <div class="qtype-info"><h3>MCQ (1 Mark)</h3><p>Multiple choice with instant feedback & score</p></div>
+    </div>
+    <div class="qtype-card two" onclick="loadQs('short')">
+      <div class="qtype-icon">🟢</div>
+      <div class="qtype-info"><h3>Short Answer (2 Marks)</h3><p>Brief questions with detailed answers</p></div>
+    </div>
+    <div class="qtype-card five" onclick="loadQs('long')">
+      <div class="qtype-icon">🟡</div>
+      <div class="qtype-info"><h3>Long Answer (5 Marks)</h3><p>Essay type with comprehensive answers</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="questionScreen">
+  <div id="qContainer"></div>
+</div>
+
+<script src="questions_db.js"></script>
+<script>
+const SUBJECTS=[
+  {id:'mathematics',name:'Mathematics',icon:'📐',color:'#6366f1',books:[{id:'mathematics',name:'Mathematics'}]},
+  {id:'english',name:'English',icon:'📖',color:'#10b981',books:[{id:'english_ff',name:'First Flight'},{id:'english_fw',name:'Footprints Without Feet'},{id:'english_we',name:'Words & Expressions'}]},
+  {id:'science',name:'Science',icon:'🔬',color:'#ef4444',books:[{id:'science',name:'Science'}]},
+  {id:'social',name:'Social Science',icon:'🌍',color:'#f59e0b',books:[{id:'social_ci',name:'Contemporary India (Geography)'},{id:'social_dp',name:'Democratic Politics'},{id:'social_iw',name:'India & Contemporary World'},{id:'social_ue',name:'Understanding Economics'}]},
+  {id:'health',name:'Health & Physical Education',icon:'🏃',color:'#8b5cf6',books:[{id:'health_pe',name:'Health & Physical Education'}]}
+];
+const CHAPTERS={
+  mathematics:['Real Numbers','Polynomials','Pair of Linear Equations in Two Variables','Quadratic Equations','Arithmetic Progressions','Triangles','Coordinate Geometry','Introduction to Trigonometry','Some Applications of Trigonometry','Circles','Areas Related to Circles','Surface Areas and Volumes','Statistics','Probability'],
+  english_ff:['A Letter to God','Nelson Mandela: Long Walk to Freedom','Two Stories about Flying','From the Diary of Anne Frank','The Hundred Dresses–I','The Hundred Dresses–II','Glimpses of India','Mijbil the Otter','Madam Rides the Bus','The Sermon at Benares','The Proposal'],
+  english_fw:['A Triumph of Surgery','The Thief\'s Story','The Midnight Visitor','A Question of Trust','Footprints without Feet','The Making of a Scientist','The Necklace','The Hack Driver','Bholi','The Book That Saved the Earth'],
+  english_we:['Unit 1: Reading Skills','Unit 2: Writing Skills','Unit 3: Grammar','Unit 4: Literature','Unit 5: Vocabulary','Unit 6: Comprehension','Unit 7: Composition','Unit 8: Language Use','Unit 9: Practice Exercises'],
+  science:['Chemical Reactions and Equations','Acids, Bases and Salts','Metals and Non-metals','Carbon and its Compounds','Life Processes','Control and Coordination','How do Organisms Reproduce?','Heredity and Evolution','Light – Reflection and Refraction','Human Eye and Colourful World','Electricity','Magnetic Effects of Electric Current','Our Environment'],
+  social_ci:['Resources and Development','Forest and Wildlife Resources','Water Resources','Agriculture','Minerals and Energy Resources','Manufacturing Industries','Lifelines of National Economy'],
+  social_dp:['Power Sharing','Federalism','Democracy and Diversity','Gender, Religion and Caste','Popular Struggles and Movements','Political Parties','Outcomes of Democracy'],
+  social_iw:['The Rise of Nationalism in Europe','Nationalism in India','The Making of a Global World','The Age of Industrialisation','Print Culture and the Modern World'],
+  social_ue:['Development','Sectors of the Indian Economy','Money and Credit','Globalisation and the Indian Economy','Consumer Rights'],
+  health_pe:['Meaning, Objectives and Scope of Physical Education','Effects of Physical Activities on the Body','Growth and Development during Adolescence','Individual Games and Sports – I','Individual Games and Sports – II','Team Games and Sports – I','Team Games and Sports – II','Yoga for Healthy Living','Dietary Considerations and Food Quality','Safety Measures for Healthy Living','Healthy Community Living','Social Health','Agencies and Awards in Sports']
+};
+let S={subjectId:null,bookId:null,chapName:null};
+
+function getQs(bookId,chapName,type){
+  if(QUESTIONS_DB[bookId]&&QUESTIONS_DB[bookId][chapName]&&QUESTIONS_DB[bookId][chapName][type]&&QUESTIONS_DB[bookId][chapName][type].length>0){
+    return QUESTIONS_DB[bookId][chapName][type];
+  }
+  return fallback(chapName,type);
+}
+
+function fallback(ch,type){
+  if(type==='mcq') return [
+    {q:`"${ch}" is a chapter in Class 10 NCERT. The questions for this chapter are being prepared. Which is the best way to prepare?`,opts:['Read textbook thoroughly','Skip the chapter','Only memorise','None'],ans:0},
+    {q:`When studying "${ch}", what should a student focus on?`,opts:['Key definitions and concepts','Only diagrams','Only formulas','Only examples'],ans:0},
+    {q:`Practice questions for "${ch}" help students to:`,opts:['Improve understanding','Waste time','Confuse concepts','None'],ans:0}
+  ];
+  if(type==='short') return [
+    {q:`Define the key concept of the chapter "${ch}".`,a:`Chapter: ${ch}\n\nThis chapter is part of the Class 10 NCERT curriculum. To understand its key concepts:\n\n1. Read the chapter carefully from your NCERT textbook\n2. Note down all definitions highlighted in the text\n3. Understand the examples given\n4. Practice all exercise questions\n\nMore questions for this chapter are being added to the app soon!`},
+    {q:`What are the important topics in "${ch}"?`,a:`Important topics in ${ch}:\n\n1. Introduction and overview\n2. Main concepts and theories\n3. Key definitions and terminology\n4. Applications and examples\n5. Important diagrams (if applicable)\n\nRefer to your NCERT textbook for complete coverage. All topics follow the latest CBSE syllabus.`}
+  ];
+  return [{q:`Write a detailed essay on the important concepts covered in the chapter "${ch}".`,a:`Chapter: ${ch}\n\nThis is a comprehensive topic in Class 10 NCERT curriculum.\n\nKey areas to cover in your answer:\n1. Introduction – Define and introduce the main topic\n2. Main Content – Explain all sub-topics in detail\n3. Examples – Give relevant examples from daily life\n4. Diagrams – Draw labelled diagrams where applicable\n5. Conclusion – Summarise the key learning\n\nStudy Tips:\n• Read the NCERT chapter 2-3 times\n• Highlight important sentences\n• Write notes in your own words\n• Practice previous year questions\n• Revise regularly\n\nNote: More detailed pre-written answers for this chapter are being added to the app!`}];
+}
+
+function renderHome(){
+  const g=document.getElementById('subjectGrid');g.innerHTML='';
+  SUBJECTS.forEach(s=>{
+    const c=document.createElement('div');c.className='subject-card';
+    c.style.borderColor=s.color;
+    c.innerHTML=`<div class="subject-icon">${s.icon}</div><div class="subject-name">${s.name}</div><div class="subject-count">${s.books.length} book${s.books.length>1?'s':''}</div>`;
+    c.onclick=()=>selectSubject(s);g.appendChild(c);
+  });
+  showScreen('homeScreen');
+  document.getElementById('backBtn').style.display='none';
+  document.getElementById('headerTitle').textContent='📚 Smart Study App';
+  document.getElementById('breadcrumb').textContent='Class 10 NCERT • All Subjects';
+}
+
+function selectSubject(s){
+  S.subjectId=s.id;
+  if(s.books.length===1){selectBook(s.books[0]);return;}
+  document.getElementById('bookSectionTitle').textContent=`${s.icon} ${s.name} — Select Book`;
+  const list=document.getElementById('bookList');list.innerHTML='';
+  s.books.forEach(b=>{
+    const item=document.createElement('div');item.className='list-item';
+    item.innerHTML=`<div class="list-icon">📗</div><div class="list-text"><h3>${b.name}</h3></div><div class="list-arrow">›</div>`;
+    item.onclick=()=>selectBook(b);list.appendChild(item);
+  });
+  showScreen('bookScreen');
+  document.getElementById('backBtn').style.display='flex';
+  document.getElementById('headerTitle').textContent=s.name;
+  document.getElementById('breadcrumb').textContent='Select a book';
+}
+
+function selectBook(b){
+  S.bookId=b.id;
+  const chs=CHAPTERS[b.id]||[];
+  document.getElementById('chapSectionTitle').textContent=`📚 ${b.name}`;
+  const list=document.getElementById('chapterList');list.innerHTML='';
+  chs.forEach((ch,i)=>{
+    const hasQs=QUESTIONS_DB[b.id]&&QUESTIONS_DB[b.id][ch];
+    const item=document.createElement('div');item.className='list-item';
+    item.innerHTML=`<div class="chap-badge">${i+1}</div><div class="list-text"><h3>${ch}</h3><p style="color:${hasQs?'#10b981':'#94a3b8'}">${hasQs?'✅ Pre-built questions ready':'📝 Questions available'}</p></div><div class="list-arrow">›</div>`;
+    item.onclick=()=>selectChapter(ch);list.appendChild(item);
+  });
+  showScreen('chapterScreen');
+  document.getElementById('backBtn').style.display='flex';
+  document.getElementById('headerTitle').textContent=b.name;
+  document.getElementById('breadcrumb').textContent=`${chs.length} chapters`;
+}
+
+function selectChapter(ch){
+  S.chapName=ch;
+  document.getElementById('qtypeChapName').textContent=ch;
+  showScreen('qtypeScreen');
+  document.getElementById('backBtn').style.display='flex';
+  document.getElementById('headerTitle').textContent=ch;
+  document.getElementById('breadcrumb').textContent='Choose question type';
+}
+
+function loadQs(type){
+  const qs=getQs(S.bookId,S.chapName,type);
+  const c=document.getElementById('qContainer');c.innerHTML='';
+  const tLabel={mcq:'🔵 MCQ – 1 Mark',short:'🟢 Short Answer – 2 Marks',long:'🟡 Long Answer – 5 Marks'};
+  const info=document.createElement('div');
+  info.style.cssText='background:white;border-radius:14px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)';
+  info.innerHTML=`<div style="font-size:14px;font-weight:700">${S.chapName}</div><div style="font-size:12px;color:#64748b;margin-top:2px">${tLabel[type]} • ${qs.length} Questions</div>`;
+  c.appendChild(info);
+  if(type==='mcq'){
+    const sb=document.createElement('div');sb.className='score-bar';
+    sb.innerHTML=`<div class="score-circle"><div class="score-num" id="sNum">0</div><div class="score-denom">/${qs.length}</div></div><div class="score-info"><h3>Your Score</h3><p id="sTxt">Answer to track score</p></div>`;
+    c.appendChild(sb);
+  }
+  qs.forEach((q,i)=>c.appendChild(type==='mcq'?mkMCQ(q,i,qs.length):mkQA(q,i,type)));
+  const bot=document.createElement('div');bot.className='action-row';
+  bot.innerHTML=`<button class="action-btn s" onclick="selectChapter('${S.chapName.replace(/'/g,"\\'")}')">← Back to Types</button>`;
+  c.appendChild(bot);
+  showScreen('questionScreen');
+  document.getElementById('backBtn').style.display='flex';
+  document.getElementById('headerTitle').textContent=tLabel[type].split('–')[0].trim();
+  document.getElementById('breadcrumb').textContent=S.chapName;
+}
+
+function mkMCQ(q,idx,total){
+  const d=document.createElement('div');d.className='question-card';d.id=`mc${idx}`;
+  const labels=['A','B','C','D'];
+  const opts=(q.opts||[]).map((o,oi)=>`<button class="opt-btn" id="o${idx}_${oi}" onclick="chk(${idx},${oi},${q.ans},${total})"><span class="opt-label">${labels[oi]}.</span><span>${o}</span></button>`).join('');
+  d.innerHTML=`<div class="q-num">Q${idx+1} of ${total} • 1 Mark</div><div class="q-text">${q.q}</div><div class="options-grid">${opts}</div><div id="r${idx}" class="result-badge" style="display:none"></div>`;
+  return d;
+}
+
+function chk(qi,sel,cor,tot){
+  const card=document.getElementById(`mc${qi}`);if(card.dataset.done)return;card.dataset.done='1';
+  card.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const L=['A','B','C','D'];
+  const rD=document.getElementById(`r${qi}`);
+  if(sel===cor){
+    document.getElementById(`o${qi}_${sel}`).classList.add('correct');
+    rD.className='result-badge c';rD.textContent='✅ Correct! Well done!';
+    const sn=document.getElementById('sNum');if(sn){const ns=parseInt(sn.textContent)+1;sn.textContent=ns;document.getElementById('sTxt').textContent=`${Math.round(ns/tot*100)}% accuracy`;}
+  }else{
+    document.getElementById(`o${qi}_${sel}`).classList.add('wrong');
+    document.getElementById(`o${qi}_${cor}`).classList.add('show-correct');
+    rD.className='result-badge w';rD.textContent=`❌ Wrong! Correct: ${L[cor]}`;
+  }
+  rD.style.display='block';
+}
+
+function mkQA(q,idx,type){
+  const d=document.createElement('div');d.className='qa-card';
+  const marks=type==='short'?2:5;
+  d.innerHTML=`<div class="q-num">Q${idx+1} • ${marks} Marks</div><div class="q-text">${q.q}</div><button class="show-ans-btn" id="ab${idx}" onclick="tog(${idx})">👁 Show Answer</button><div class="ans-box" id="ab${idx}x">${(q.a||'').replace(/\n/g,'<br/>')}</div>`;
+  return d;
+}
+
+function tog(idx){
+  const b=document.getElementById(`ab${idx}x`),btn=document.getElementById(`ab${idx}`);
+  if(b.classList.contains('visible')){b.classList.remove('visible');btn.classList.remove('shown');btn.textContent='👁 Show Answer';}
+  else{b.classList.add('visible');btn.classList.add('shown');btn.textContent='🙈 Hide Answer';}
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goBack(){
+  const a=document.querySelector('.screen.active').id;
+  if(a==='questionScreen')selectChapter(S.chapName);
+  else if(a==='qtypeScreen'){const s=SUBJECTS.find(x=>x.id===S.subjectId);const b=s.books.find(x=>x.id===S.bookId);selectBook(b);}
+  else if(a==='chapterScreen')selectSubject(SUBJECTS.find(x=>x.id===S.subjectId));
+  else renderHome();
+}
+
+renderHome();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
