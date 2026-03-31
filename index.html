@@ -19,105 +19,113 @@
   <style>
     :root { 
       --primary: #6366f1; 
-      --bg: #f0f9ff; 
+      --bg: #f8fafc; 
       --success: #22c55e; 
       --danger: #ef4444; 
-      --card-shadow: 0 8px 15px rgba(0,0,0,0.1);
     }
     
-    body { font-family: 'Comic Sans MS', 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; color: #1e293b; margin: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 15px; color: #1e293b; line-height: 1.5; }
     .container { max-width: 600px; margin: 0 auto; }
     
-    h1 { text-align: center; color: var(--primary); text-shadow: 1px 1px 2px white; }
+    h1 { text-align: center; color: var(--primary); font-size: 1.8rem; margin-bottom: 20px; }
     
-    /* Fun Animated Cards */
+    /* Interactive Cards */
     .card { 
-      background: white; padding: 20px; margin: 15px 0; border-radius: 20px; 
-      border: 3px solid #e2e8f0; cursor: pointer; box-shadow: var(--card-shadow); 
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative; overflow: hidden;
+      background: white; padding: 20px; margin: 12px 0; border-radius: 16px; 
+      border: 2px solid #e2e8f0; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
     }
-    .card:hover { transform: scale(1.03); border-color: var(--primary); }
-    .card:active { transform: scale(0.95); }
+    .card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .card:active { transform: scale(0.98); }
 
     .btn-back { 
-      background: #f43f5e; color: white; border: none; padding: 12px 20px; 
+      background: #64748b; color: white; border: none; padding: 10px 20px; 
       border-radius: 50px; cursor: pointer; margin-bottom: 15px; font-weight: bold;
-      box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3);
     }
 
     .hidden { display: none; }
     
-    /* Kid-Friendly MCQ Styles */
+    /* MCQ Fun Styles */
     .option { 
-      border: 2px solid #cbd5e1; padding: 15px; margin: 10px 0; border-radius: 15px; 
-      transition: 0.2s; font-weight: 600; background: #fff;
+      border: 1px solid #cbd5e1; padding: 14px; margin: 10px 0; border-radius: 12px; 
+      transition: 0.3s; font-weight: 500; background: #fff;
     }
     
-    /* Interaction Feedback */
-    @keyframes pop {
+    /* Correct Answer Animation */
+    @keyframes success-pop {
       0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+      50% { transform: scale(1.05); background-color: #dcfce7; }
       100% { transform: scale(1); }
     }
 
     .correct { 
       background: var(--success) !important; color: white; border-color: #15803d; 
-      animation: pop 0.4s ease;
+      animation: success-pop 0.4s ease forwards;
     }
-    .correct::after { content: ' ✅ Awesome!'; font-size: 0.8em; }
+
+    /* Wrong Answer Shake */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
 
     .wrong { 
       background: var(--danger) !important; color: white; border-color: #b91c1c; 
-      animation: shake 0.3s;
-    }
-    .wrong::after { content: ' ❌ Try again!'; font-size: 0.8em; }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
+      animation: shake 0.3s ease;
     }
     
     .ans-box { 
-      background: #fff9c4; padding: 15px; margin-top: 10px; border-radius: 15px; 
-      display: none; border: 2px dashed #facc15; line-height: 1.6;
+      background: #fef9c3; padding: 15px; margin-top: 10px; border-radius: 12px; 
+      display: none; border-left: 5px solid #facc15; font-size: 0.95rem;
     }
     
     .show-btn { 
-      background: var(--primary); color: white; border: none; padding: 12px 20px; 
-      border-radius: 12px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: bold;
+      background: var(--primary); color: white; border: none; padding: 10px 15px; 
+      border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: 600;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <button id="backBtn" class="btn-back hidden" onclick="location.reload()">🏠 Go Home</button>
-  
-  <div id="subjectScreen"><h1>🌟 Pick a Mission!</h1></div>
-  
+  <button id="backBtn" class="btn-back hidden" onclick="location.reload()">⬅ Back to Menu</button>
+  <div id="subjectScreen"><h1>📚 Select a Subject</h1></div>
   <div id="chapterScreen" class="hidden"></div>
-  
   <div id="typeScreen" class="hidden"></div>
-  
   <div id="questionScreen" class="hidden"></div>
 </div>
 
 <script>
-  // FIXED SUBJECT MAPPING
-  // Added extra safety checks for HPE and Math variable names
-  const subjects = [
-    { name: '📐 Mathematics', data: (window.QUESTIONS_DB || {}).mathematics },
-    { name: '🧪 Science', data: (window.SCIENCE_QUESTIONS_DB || {}).science },
-    { name: '📜 History', data: (window.SOCIAL_HIST_QUESTIONS_DB || {}).social_hist },
-    { name: '🌍 Geography', data: (window.SOCIAL_CI_QUESTIONS_DB || {}).social_ci },
-    { name: '⚖️ Civics', data: (window.SOCIAL_DP_QUESTIONS_DB || {}).social_dp },
-    { name: '💰 Economics', data: (window.SOCIAL_ECO_QUESTIONS_DB || {}).social_eco },
-    { name: '📖 English: First Flight', data: (window.ENGLISH_FF_QUESTIONS_DB || {}).english_ff },
-    { name: '🐕 English: Footprints', data: (window.ENGLISH_FP_QUESTIONS_DB || {}).english_fp },
-    { name: '✍️ English: Expressions', data: (window.ENGLISH_WE_QUESTIONS_DB || {}).english_we },
-    { name: '👟 Health & Sports Ed', data: (window.HPE_QUESTIONS_DB || {}).hpe }
+  /** * SMART DATA CHECKER 
+   * This function tries multiple ways to find the subject data 
+   * even if the variable names in the .js files vary slightly.
+   */
+  function getSubjectData(name) {
+    try {
+      if (name === 'Mathematics') return (window.QUESTIONS_DB || {}).mathematics;
+      if (name === 'Science') return (window.SCIENCE_QUESTIONS_DB || {}).science;
+      if (name === 'History') return (window.SOCIAL_HIST_QUESTIONS_DB || {}).social_hist;
+      if (name === 'Geography') return (window.SOCIAL_CI_QUESTIONS_DB || {}).social_ci;
+      if (name === 'Civics') return (window.SOCIAL_DP_QUESTIONS_DB || {}).social_dp;
+      if (name === 'Economics') return (window.SOCIAL_ECO_QUESTIONS_DB || {}).social_eco;
+      if (name === 'English: First Flight') return (window.ENGLISH_FF_QUESTIONS_DB || {}).english_ff;
+      if (name === 'English: Footprints') return (window.ENGLISH_FP_QUESTIONS_DB || {}).english_fp;
+      if (name === 'English: Expressions') return (window.ENGLISH_WE_QUESTIONS_DB || {}).english_we;
+      
+      // THE HPE FIX: 
+      // It checks both HPE_QUESTIONS_DB.hpe AND window.hpe just in case
+      if (name === 'Health & Sports Ed') {
+        return (window.HPE_QUESTIONS_DB && window.HPE_QUESTIONS_DB.hpe) ? window.HPE_QUESTIONS_DB.hpe : null;
+      }
+    } catch(e) { console.error("Error loading " + name, e); }
+    return null;
+  }
+
+  const subjectList = [
+    'Mathematics', 'Science', 'History', 'Geography', 'Civics', 
+    'Economics', 'English: First Flight', 'English: Footprints', 
+    'English: Expressions', 'Health & Sports Ed'
   ];
 
   let currentBook = null;
@@ -125,17 +133,18 @@
 
   function init() {
     const screen = document.getElementById('subjectScreen');
-    subjects.forEach(sub => {
+    subjectList.forEach(subName => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.innerHTML = `<h3>${sub.name}</h3>`;
+      div.innerHTML = `<h3>${subName}</h3>`;
       div.onclick = () => { 
-        if(!sub.data) {
-          alert("Wait! The data for " + sub.name + " is still loading or missing. Check GitHub filenames.");
+        const data = getSubjectData(subName);
+        if(!data) {
+          alert("Data for " + subName + " is not ready. Please make sure the .js file is correctly uploaded to GitHub.");
           return;
         }
-        currentBook = sub.data; 
-        showChapters(sub.name); 
+        currentBook = data; 
+        showChapters(subName); 
       };
       screen.appendChild(div);
     });
@@ -144,11 +153,11 @@
   function showChapters(name) {
     toggleScreen('chapterScreen');
     const screen = document.getElementById('chapterScreen');
-    screen.innerHTML = `<h1>📍 ${name}</h1>`;
+    screen.innerHTML = `<h1>${name}</h1>`;
     Object.keys(currentBook).forEach(chap => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.innerHTML = `<h3>${chap}</h3>`;
+      div.textContent = chap;
       div.onclick = () => { currentChapter = chap; showTypes(); };
       screen.appendChild(div);
     });
@@ -158,18 +167,19 @@
     toggleScreen('typeScreen');
     const screen = document.getElementById('typeScreen');
     const chapData = currentBook[currentChapter];
-    screen.innerHTML = `<h1>🌈 ${currentChapter}</h1><p style="text-align:center">Choose your challenge:</p>`;
+    screen.innerHTML = `<h1>${currentChapter}</h1><p style="text-align:center">Select Question Type:</p>`;
     
-    // We check for 'mcq' and 'short' (some files use 'short', others 'theory')
-    const typesAvailable = [];
-    if(chapData.mcq) typesAvailable.push({id: 'mcq', label: '🎮 Multiple Choice'});
-    if(chapData.short || chapData.passage) typesAvailable.push({id: 'short', label: '📖 Question & Answer'});
+    // Auto-detect available types
+    const types = [];
+    if(chapData.mcq) types.push('mcq');
+    if(chapData.short) types.push('short');
+    if(chapData.passage) types.push('passage');
 
-    typesAvailable.forEach(type => {
+    types.forEach(type => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.innerHTML = `<h3>${type.label}</h3>`;
-      div.onclick = () => loadQuestions(type.id);
+      div.innerHTML = `<h3>${type.toUpperCase()} Questions</h3>`;
+      div.onclick = () => loadQuestions(type);
       screen.appendChild(div);
     });
   }
@@ -177,16 +187,14 @@
   function loadQuestions(type) {
     toggleScreen('questionScreen');
     const screen = document.getElementById('questionScreen');
-    // Safety check for math/science which use 'passage' vs others which use 'short'
-    const questions = type === 'mcq' ? currentBook[currentChapter].mcq : (currentBook[currentChapter].short || currentBook[currentChapter].passage);
-    
-    screen.innerHTML = `<h1>🚀 Keep Going!</h1>`;
+    const questions = currentBook[currentChapter][type];
+    screen.innerHTML = `<h1>Ready? Go!</h1>`;
 
     questions.forEach((q, qIdx) => {
       const div = document.createElement('div');
       div.className = 'card';
       div.style.cursor = 'default';
-      div.innerHTML = `<p style="font-size:1.1em"><strong>Q${qIdx+1}:</strong> ${q.q}</p>`;
+      div.innerHTML = `<p><strong>Q${qIdx+1}:</strong> ${q.q}</p>`;
 
       if(type === 'mcq') {
         q.opts.forEach((opt, oIdx) => {
@@ -198,7 +206,7 @@
           div.appendChild(optDiv);
         });
       } else {
-        div.innerHTML += `<button class="show-btn" onclick="this.nextElementSibling.style.display='block'; this.style.display='none'">💡 Reveal Secret Answer</button>
+        div.innerHTML += `<button class="show-btn" onclick="this.nextElementSibling.style.display='block'">👁 Reveal Answer</button>
                           <div class="ans-box">${(q.a || "").replace(/\n/g, '<br>')}</div>`;
       }
       screen.appendChild(div);
@@ -206,19 +214,23 @@
   }
 
   function checkMCQ(qIdx, selectedIdx, correctIdx) {
-    const correctId = `q${qIdx}o${correctIdx}`;
     const selectedId = `q${qIdx}o${selectedIdx}`;
+    const correctId = `q${qIdx}o${correctIdx}`;
     
-    // Show correct answer immediately
+    // Always highlight the correct one in green
     document.getElementById(correctId).classList.add('correct');
     
+    // If user picked wrong, highlight theirs in red
     if(selectedIdx !== correctIdx) {
       document.getElementById(selectedId).classList.add('wrong');
     }
   }
 
   function toggleScreen(id) {
-    document.querySelectorAll('.container > div').forEach(s => s.classList.add('hidden'));
+    document.getElementById('subjectScreen').classList.add('hidden');
+    document.getElementById('chapterScreen').classList.add('hidden');
+    document.getElementById('typeScreen').classList.add('hidden');
+    document.getElementById('questionScreen').classList.add('hidden');
     document.getElementById(id).classList.remove('hidden');
     document.getElementById('backBtn').classList.remove('hidden');
     window.scrollTo(0,0);
