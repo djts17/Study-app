@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Study App - 10 Books</title>
+  <title>Complete Study App - All Question Types</title>
   
   <script src="math_questions_db.js"></script>
   <script src="science_questions_db.js"></script>
@@ -18,102 +18,137 @@
 
   <style>
     :root { --primary: #4f46e5; --bg: #f8fafc; --text: #1e293b; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 15px; }
     .container { max-width: 600px; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .card { background: white; padding: 20px; margin: 10px 0; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
+    .card { background: white; padding: 18px; margin: 12px 0; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .card:hover { border-color: var(--primary); background: #f5f3ff; }
-    .btn-back { background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; }
+    .btn-back { background: #64748b; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
     .hidden { display: none; }
-    .ans-box { background: #f1f5f9; padding: 15px; margin-top: 10px; border-radius: 8px; display: none; font-style: italic; }
+    .ans-box { background: #f1f5f9; padding: 15px; margin-top: 10px; border-radius: 8px; display: none; border-left: 4px solid var(--primary); line-height: 1.5; }
+    .q-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 8px; background: #e0e7ff; color: #4338ca; }
+    h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    button.show-btn { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="header"><h1>📚 Study App</h1></div>
-  
   <button id="backBtn" class="btn-back hidden" onclick="goBack()">⬅ Back</button>
 
-  <div id="subjectScreen"></div>
+  <div id="subjectScreen">
+    <h1 style="text-align:center">📚 Select Subject</h1>
+  </div>
 
   <div id="chapterScreen" class="hidden"></div>
+
+  <div id="typeScreen" class="hidden"></div>
 
   <div id="questionScreen" class="hidden"></div>
 </div>
 
 <script>
-  // This is the "Map" that tells the app which data belongs to which button
+  // Mapping the buttons to your specific file variables
   const subjects = [
     { id: 'math', name: 'Mathematics', data: typeof QUESTIONS_DB !== 'undefined' ? QUESTIONS_DB.mathematics : null },
     { id: 'sci', name: 'Science', data: typeof SCIENCE_QUESTIONS_DB !== 'undefined' ? SCIENCE_QUESTIONS_DB.science : null },
-    { id: 'hist', name: 'History (SST)', data: typeof SOCIAL_HIST_QUESTIONS_DB !== 'undefined' ? SOCIAL_HIST_QUESTIONS_DB.social_hist : null },
-    { id: 'geo', name: 'Geography (SST)', data: typeof SOCIAL_CI_QUESTIONS_DB !== 'undefined' ? SOCIAL_CI_QUESTIONS_DB.social_ci : null },
-    { id: 'civ', name: 'Civics (SST)', data: typeof SOCIAL_DP_QUESTIONS_DB !== 'undefined' ? SOCIAL_DP_QUESTIONS_DB.social_dp : null },
-    { id: 'eco', name: 'Economics (SST)', data: typeof SOCIAL_ECO_QUESTIONS_DB !== 'undefined' ? SOCIAL_ECO_QUESTIONS_DB.social_eco : null },
+    { id: 'hist', name: 'History', data: typeof SOCIAL_HIST_QUESTIONS_DB !== 'undefined' ? SOCIAL_HIST_QUESTIONS_DB.social_hist : null },
+    { id: 'geo', name: 'Geography', data: typeof SOCIAL_CI_QUESTIONS_DB !== 'undefined' ? SOCIAL_CI_QUESTIONS_DB.social_ci : null },
+    { id: 'civ', name: 'Civics', data: typeof SOCIAL_DP_QUESTIONS_DB !== 'undefined' ? SOCIAL_DP_QUESTIONS_DB.social_dp : null },
+    { id: 'eco', name: 'Economics', data: typeof SOCIAL_ECO_QUESTIONS_DB !== 'undefined' ? SOCIAL_ECO_QUESTIONS_DB.social_eco : null },
     { id: 'eff', name: 'English: First Flight', data: typeof ENGLISH_FF_QUESTIONS_DB !== 'undefined' ? ENGLISH_FF_QUESTIONS_DB.english_ff : null },
     { id: 'efp', name: 'English: Footprints', data: typeof ENGLISH_FP_QUESTIONS_DB !== 'undefined' ? ENGLISH_FP_QUESTIONS_DB.english_fp : null },
     { id: 'ewe', name: 'English: Expressions', data: typeof ENGLISH_WE_QUESTIONS_DB !== 'undefined' ? ENGLISH_WE_QUESTIONS_DB.english_we : null },
     { id: 'hpe', name: 'Health & Sports', data: typeof HPE_QUESTIONS_DB !== 'undefined' ? HPE_QUESTIONS_DB.hpe : null }
   ];
 
-  let currentData = null;
+  let currentBook = null;
+  let currentChapter = null;
+  let history = ['subject'];
 
   function init() {
     const screen = document.getElementById('subjectScreen');
-    screen.innerHTML = '';
     subjects.forEach(sub => {
       const div = document.createElement('div');
       div.className = 'card';
       div.innerHTML = `<h3>${sub.name}</h3>`;
-      div.onclick = () => showChapters(sub.data);
+      div.onclick = () => { currentBook = sub.data; showChapters(sub.name); };
       screen.appendChild(div);
     });
   }
 
-  function showChapters(data) {
-    if(!data) { alert("File not found! Make sure your .js files are in the same folder."); return; }
-    currentData = data;
-    document.getElementById('subjectScreen').classList.add('hidden');
-    document.getElementById('backBtn').classList.remove('hidden');
+  function showChapters(name) {
+    if(!currentBook) { alert("File for " + name + " not found!"); return; }
+    toggleScreen('chapterScreen');
     const screen = document.getElementById('chapterScreen');
-    screen.classList.remove('hidden');
-    screen.innerHTML = '<h2>Select Chapter</h2>';
-    
-    Object.keys(data).forEach(chap => {
+    screen.innerHTML = `<h2>${name}: Chapters</h2>`;
+    Object.keys(currentBook).forEach(chap => {
       const div = document.createElement('div');
       div.className = 'card';
       div.textContent = chap;
-      div.onclick = () => showQuestions(chap);
+      div.onclick = () => { currentChapter = chap; showTypes(); };
       screen.appendChild(div);
     });
   }
 
-  function showQuestions(chapName) {
-    document.getElementById('chapterScreen').classList.add('hidden');
+  function showTypes() {
+    toggleScreen('typeScreen');
+    const screen = document.getElementById('typeScreen');
+    const chapData = currentBook[currentChapter];
+    screen.innerHTML = `<h2>${currentChapter}</h2><p>Select question type:</p>`;
+    
+    const types = [
+      { key: 'mcq', label: 'Multiple Choice (MCQs)' },
+      { key: 'short', label: 'Short Answer Questions' },
+      { key: 'passage', label: 'Long Answers / Passages' }
+    ];
+
+    types.forEach(t => {
+      if(chapData[t.key] && chapData[t.key].length > 0) {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<h3>${t.label}</h3><small>${chapData[t.key].length} Questions</small>`;
+        div.onclick = () => loadQuestions(t.key);
+        screen.appendChild(div);
+      }
+    });
+  }
+
+  function loadQuestions(type) {
+    toggleScreen('questionScreen');
     const screen = document.getElementById('questionScreen');
-    screen.classList.remove('hidden');
-    screen.innerHTML = `<h2>${chapName}</h2>`;
+    const questions = currentBook[currentChapter][type];
+    screen.innerHTML = `<h2>${type.toUpperCase()} - ${currentChapter}</h2>`;
     
-    const questions = currentData[chapName].mcq || currentData[chapName].short || [];
-    
-    questions.forEach((q, index) => {
+    questions.forEach((q, i) => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.innerHTML = `<p><strong>Q${index+1}:</strong> ${q.q}</p>
-                       <button onclick="toggleAns(${index})">👁 Show Answer</button>
-                       <div id="ans-${index}" class="ans-box">${q.ans !== undefined ? q.opts[q.ans] : q.a}</div>`;
+      let answerText = "";
+      
+      // Logic to find the answer based on question type
+      if(type === 'mcq') {
+        answerText = `Correct Option: ${q.opts[q.ans]}`;
+        const options = q.opts.map((o, idx) => `<li>${o}</li>`).join('');
+        div.innerHTML = `<div class="q-badge">MCQ</div><p><strong>Q${i+1}:</strong> ${q.q}</p><ul>${options}</ul>`;
+      } else {
+        answerText = (q.a || "").replace(/\n/g, '<br>');
+        div.innerHTML = `<div class="q-badge">${type === 'short' ? 'Short Ans' : 'Long Ans'}</div><p><strong>Q${i+1}:</strong> ${q.q}</p>`;
+      }
+
+      div.innerHTML += `<button class="show-btn" onclick="document.getElementById('ans-${type}-${i}').style.display='block'">👁 Show Answer</button>
+                        <div id="ans-${type}-${i}" class="ans-box">${answerText}</div>`;
       screen.appendChild(div);
     });
   }
 
-  function toggleAns(id) {
-    const el = document.getElementById(`ans-${id}`);
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  function toggleScreen(id) {
+    document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    document.getElementById('backBtn').classList.remove('hidden');
+    history.push(id);
   }
 
   function goBack() {
-    location.reload(); // Simple way to go back to main screen
+    location.reload(); // Simple reset for non-techies to ensure no errors
   }
 
   init();
