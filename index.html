@@ -29,22 +29,23 @@
     .wrong { background: var(--danger) !important; color: white; border-color: #b91c1c; }
     .ans-box { background: #fef9c3; padding: 15px; margin-top: 15px; border-radius: 15px; display: none; border: 2px dashed #facc15; }
     .hidden { display: none; }
-    .image-placeholder { background: #e0e7ff; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; border: 2px dashed var(--primary); }
-    .q-img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+    .q-img { width: 100%; border-radius: 10px; margin-bottom: 10px; border: 2px solid #ddd; }
+    .loading-msg { text-align: center; color: #6366f1; font-weight: bold; margin-top: 50px; }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <div id="loader" class="loading-msg">✨ Casting Spells... (Loading Files)</div>
   <button id="backBtn" class="btn-back hidden" onclick="location.reload()">🏠 Home</button>
-  <div id="subjectScreen"><h1>🚀 Study Adventure!</h1></div>
+  <div id="subjectScreen" class="hidden"><h1>🚀 Study Adventure!</h1></div>
   <div id="chapterScreen" class="hidden"></div>
   <div id="typeScreen" class="hidden"></div>
   <div id="questionScreen" class="hidden"></div>
 </div>
 
 <script>
-  // MANDATORY: This matches your variable names exactly
+  // This is the master list. The "var" must match the first line of your .js files.
   const subjects = [
     { name: '📐 Math', var: 'QUESTIONS_DB', key: 'mathematics' },
     { name: '🧪 Science', var: 'SCIENCE_QUESTIONS_DB', key: 'science' },
@@ -61,6 +62,13 @@
   let currentData = null;
   let currentChapter = null;
 
+  // Wait for everything to load before showing subjects
+  window.onload = function() {
+    document.getElementById('loader').classList.add('hidden');
+    document.getElementById('subjectScreen').classList.remove('hidden');
+    init();
+  };
+
   function init() {
     const screen = document.getElementById('subjectScreen');
     subjects.forEach(sub => {
@@ -68,12 +76,13 @@
       div.className = 'card';
       div.innerHTML = `<h2>${sub.name}</h2>`;
       div.onclick = () => {
-        try {
-          // This line dynamically finds the data even if name is slightly off
-          const dataObj = window[sub.var];
-          currentData = dataObj[sub.key];
-          showChapters(sub.name);
-        } catch(e) { alert("File not found for " + sub.name); }
+        // Validation check
+        if (typeof window[sub.var] === 'undefined') {
+          alert(`Error: The file for ${sub.name} is missing or named incorrectly on GitHub. Check ${sub.var}.`);
+          return;
+        }
+        currentData = window[sub.var][sub.key];
+        showChapters(sub.name);
       };
       screen.appendChild(div);
     });
@@ -98,7 +107,7 @@
     const chapData = currentData[currentChapter];
     screen.innerHTML = `<h1>✨ ${currentChapter}</h1>`;
     ['mcq', 'short', 'passage'].forEach(type => {
-      if(chapData[type]) {
+      if(chapData[type] && chapData[type].length > 0) {
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `<h3>${type.toUpperCase()} Mode</h3>`;
@@ -112,17 +121,15 @@
     toggleScreen('questionScreen');
     const screen = document.getElementById('questionScreen');
     const questions = currentData[currentChapter][type];
-    screen.innerHTML = `<h1>🎯 Solve Them!</h1>`;
+    screen.innerHTML = `<h1>🎯 Good Luck!</h1>`;
 
     questions.forEach((q, qIdx) => {
       const div = document.createElement('div');
       div.className = 'card';
 
-      // IMAGE LOGIC: If question has an image or is a "passage"
-      if (type === 'passage' || q.img) {
-         const imgHtml = q.img ? `<img src="${q.img}" class="q-img">` : 
-         `<div class="image-placeholder">🖼️ <b>Reading Challenge</b><br><small>Look at the text/diagram below</small></div>`;
-         div.innerHTML += imgHtml;
+      // Displays image if the data contains an "img" link
+      if (q.img) {
+         div.innerHTML += `<img src="${q.img}" class="q-img" onerror="this.style.display='none'">`;
       }
 
       div.innerHTML += `<p style="font-size:1.1rem"><strong>${qIdx+1}.</strong> ${q.q}</p>`;
@@ -140,7 +147,7 @@
           div.appendChild(optBtn);
         });
       } else {
-        div.innerHTML += `<button class="btn-back" style="background:var(--secondary);box-shadow:0 4px 0 #7e22ce" onclick="document.getElementById('ans${qIdx}').style.display='block'">💡 Answer</button>
+        div.innerHTML += `<button class="btn-back" style="background:var(--secondary);box-shadow:0 4px 0 #7e22ce" onclick="document.getElementById('ans${qIdx}').style.display='block'">💡 View Answer</button>
                           <div id="ans${qIdx}" class="ans-box">${(q.a || "").replace(/\n/g, '<br>')}</div>`;
       }
       screen.appendChild(div);
@@ -153,8 +160,6 @@
     document.getElementById('backBtn').classList.remove('hidden');
     window.scrollTo(0,0);
   }
-
-  init();
 </script>
 </body>
 </html>
