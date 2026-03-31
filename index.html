@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📚 Class 10 Study App - FIXED Version</title>
+  <title>🌟 Super Study Adventure</title>
   
-  <script src="questions_db.js"></script>
+  <script src="math_questions_db.js"></script>
   <script src="science_questions_db.js"></script>
   <script src="social_hist_questions_db.js"></script>
   <script src="social_ci_questions_db.js"></script>
@@ -17,156 +17,183 @@
   <script src="hpe_questions_db.js"></script>
 
   <style>
-    :root { --primary: #4f46e5; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
+    :root {
+      --primary: #6366f1;
+      --secondary: #a855f7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --bg: #f0f9ff;
+    }
+    body { 
+      font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; 
+      background-color: var(--bg);
+      background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+      background-size: 30px 30px;
+      margin: 0; padding: 15px; color: #1e293b;
+    }
     .container { max-width: 600px; margin: 0 auto; }
-    .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 10px; }
-    .card { background: var(--card); padding: 20px; margin: 12px 0; border-radius: 16px; border: 2px solid #e2e8f0; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    .card:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px; }
-    .btn-back { background: #ef4444; margin-bottom: 20px; width: 100%; }
-    .option { border: 2px solid #f1f5f9; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; }
-    .correct { background: #22c55e !important; color: white; border-color: #16a34a; }
-    .wrong { background: #ef4444 !important; color: white; border-color: #dc2626; }
-    .ans-box { background: #fef9c3; padding: 15px; border-radius: 12px; display: none; margin-top: 10px; border: 1px dashed #eab308; line-height: 1.5; }
+    h1 { text-align: center; color: var(--primary); text-shadow: 2px 2px #fff; font-size: 2.5rem; margin-bottom: 10px; }
+    
+    /* Playful Cards */
+    .card { 
+      background: white; padding: 20px; margin: 15px 0; 
+      border-radius: 20px; border: 3px solid #e2e8f0; 
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 0 #cbd5e1;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 11px 0 #cbd5e1; border-color: var(--primary); }
+    .card:active { transform: translateY(5px); box-shadow: 0 2px 0 #cbd5e1; }
+    
+    .subject-card { background: linear-gradient(to bottom right, #ffffff, #f5f3ff); border-left: 10px solid var(--secondary); }
+    .chapter-card { border-left: 10px solid var(--primary); }
+    
+    /* Buttons */
+    .btn-back { 
+      background: #f87171; color: white; border: none; padding: 12px 25px; 
+      border-radius: 50px; cursor: pointer; font-weight: bold; margin-bottom: 20px;
+      box-shadow: 0 4px 0 #b91c1c;
+    }
+    .btn-back:active { transform: translateY(2px); box-shadow: 0 1px 0 #b91c1c; }
+
+    /* MCQ Fun Styles */
+    .option { 
+      border: 2px solid #e2e8f0; padding: 15px; margin: 10px 0; 
+      border-radius: 15px; font-weight: bold; background: #fff;
+    }
+    .correct { background: var(--success) !important; color: white; border-color: #15803d; transform: scale(1.02); }
+    .wrong { background: var(--danger) !important; color: white; border-color: #b91c1c; }
+    
+    .ans-box { 
+      background: #fef9c3; padding: 15px; margin-top: 15px; 
+      border-radius: 15px; display: none; border: 2px dashed #facc15; line-height: 1.6;
+    }
+    .show-btn { 
+      background: var(--secondary); color: white; border: none; 
+      padding: 10px 20px; border-radius: 10px; cursor: pointer;
+    }
     .hidden { display: none; }
-    .mode-btn-container { text-align: center; margin-bottom: 20px; }
+    .q-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; background: #eee; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div id="subjectScreen">
-    <div class="header"><h1>📚 Class 10 Subjects</h1></div>
-    <div id="subjectList"></div>
-  </div>
-
-  <div id="chapterScreen" class="hidden">
-    <button class="btn-back btn-action" onclick="goBack('subject')">⬅️ Back to Subjects</button>
-    <div id="chapterList"></div>
-  </div>
-
-  <div id="questionScreen" class="hidden">
-    <button class="btn-back btn-action" onclick="goBack('chapter')">⬅️ Back to Chapters</button>
-    <div class="mode-btn-container">
-        <button id="showMCQ" class="btn-action" onclick="loadQuestions('mcq')">🎮 Start Quiz (MCQs)</button>
-        <button id="showTheory" class="btn-action" onclick="loadQuestions('theory')">📖 Practice (Short Answers)</button>
-    </div>
-    <div id="questionList"></div>
-  </div>
+  <button id="backBtn" class="btn-back hidden" onclick="goBack()">🏠 Go Home</button>
+  <div id="subjectScreen"><h1>🚀 Study Adventure!</h1><p style="text-align:center">Pick a world to explore:</p></div>
+  <div id="chapterScreen" class="hidden"></div>
+  <div id="typeScreen" class="hidden"></div>
+  <div id="questionScreen" class="hidden"></div>
 </div>
 
 <script>
-  // MANDATORY CONFIGURATION: This matches your 10 files and their variables exactly.
+  // Updated mapping to ensure HPE and others load correctly
   const subjects = [
-    { label: "📐 Mathematics", var: "QUESTIONS_DB", key: "mathematics" },
-    { label: "🧪 Science", var: "SCIENCE_QUESTIONS_DB", key: "science" },
-    { label: "📜 History", var: "SOCIAL_HIST_QUESTIONS_DB", key: "social_hist" },
-    { label: "🌍 Geography", var: "SOCIAL_CI_QUESTIONS_DB", key: "social_ci" },
-    { label: "⚖️ Civics", var: "SOCIAL_DP_QUESTIONS_DB", key: "social_dp" },
-    { name: "💰 Economics", var: "SOCIAL_ECO_QUESTIONS_DB", key: "social_eco" },
-    { label: "👟 Health & Sports Ed", var: "HPE_QUESTIONS_DB", key: "hpe" },
-    { label: "📖 English (First Flight)", var: "ENGLISH_FF_QUESTIONS_DB", key: "english_ff" },
-    { label: "🐕 English (Footprints)", var: "ENGLISH_FP_QUESTIONS_DB", key: "english_fp" },
-    { label: "✍️ English (WE)", var: "ENGLISH_WE_QUESTIONS_DB", key: "english_we" }
+    { name: '📐 Mathematics', data: typeof QUESTIONS_DB !== 'undefined' ? QUESTIONS_DB.mathematics : null },
+    { name: '🧪 Science', data: typeof SCIENCE_QUESTIONS_DB !== 'undefined' ? SCIENCE_QUESTIONS_DB.science : null },
+    { name: '📜 History', data: typeof SOCIAL_HIST_QUESTIONS_DB !== 'undefined' ? SOCIAL_HIST_QUESTIONS_DB.social_hist : null },
+    { name: '🌍 Geography', data: typeof SOCIAL_CI_QUESTIONS_DB !== 'undefined' ? SOCIAL_CI_QUESTIONS_DB.social_ci : null },
+    { name: '⚖️ Civics', data: typeof SOCIAL_DP_QUESTIONS_DB !== 'undefined' ? SOCIAL_DP_QUESTIONS_DB.social_dp : null },
+    { name: '💰 Economics', data: typeof SOCIAL_ECO_QUESTIONS_DB !== 'undefined' ? SOCIAL_ECO_QUESTIONS_DB.social_eco : null },
+    { name: '📖 English: First Flight', data: typeof ENGLISH_FF_QUESTIONS_DB !== 'undefined' ? ENGLISH_FF_QUESTIONS_DB.english_ff : null },
+    { name: '👟 Health & Sports Ed', data: typeof HPE_QUESTIONS_DB !== 'undefined' ? HPE_QUESTIONS_DB.hpe : null },
+    { name: '🐕 English: Footprints', data: typeof ENGLISH_FP_QUESTIONS_DB !== 'undefined' ? ENGLISH_FP_QUESTIONS_DB.english_fp : null },
+    { name: '✍️ English: Expressions', data: typeof ENGLISH_WE_QUESTIONS_DB !== 'undefined' ? ENGLISH_WE_QUESTIONS_DB.english_we : null }
   ];
 
-  let currentSubjectData = null;
+  let currentBook = null;
   let currentChapter = null;
 
   function init() {
-    const list = document.getElementById('subjectList');
+    const screen = document.getElementById('subjectScreen');
     subjects.forEach(sub => {
       const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<h3>${sub.label}</h3>`;
-      div.onclick = () => {
-        // Simple error checking: if the file didn't load, alert the user.
-        if (typeof window[sub.var] === 'undefined') {
-          alert(`TECHNICAL ERROR: The data file for ${sub.label} did not load.\n\nPlease check your GitHub to ensure the file is named correctly.`);
-          return;
-        }
-        currentSubjectData = window[sub.var][sub.key];
-        showChapters(sub.label);
-      };
-      list.appendChild(div);
-    });
-  }
-
-  function showChapters(subjectTitle) {
-    switchScreen('chapterScreen');
-    const screen = document.getElementById('chapterList');
-    screen.innerHTML = `<h1>📍 ${subjectTitle}: Chapters</h1>`;
-    Object.keys(currentSubjectData).forEach(chapName => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<h4>${chapName}</h4>`;
-      div.onclick = () => showModes(chapName);
+      div.className = 'card subject-card';
+      div.innerHTML = `<h2>${sub.name}</h2>`;
+      div.onclick = () => { currentBook = sub.data; showChapters(sub.name); };
       screen.appendChild(div);
     });
   }
 
-  function showModes(chapName) {
-    switchScreen('questionScreen');
-    currentChapter = chapName;
-    const chapData = currentSubjectData[chapName];
-    document.getElementById('questionList').innerHTML = `<h1>⚡ Practice: ${chapName}</h1><p>Select a mode above to begin.</p>`;
-    
-    // Hide buttons if that data type doesn't exist for this chapter
-    document.getElementById('showMCQ').style.display = chapData.mcq ? 'inline-block' : 'none';
-    document.getElementById('showTheory').style.display = chapData.short ? 'inline-block' : 'none';
+  function showChapters(name) {
+    if(!currentBook) { alert("Oh no! The " + name + " book is missing. Please check your GitHub files."); return; }
+    toggleScreen('chapterScreen');
+    const screen = document.getElementById('chapterScreen');
+    screen.innerHTML = `<h1>📍 ${name}</h1>`;
+    Object.keys(currentBook).forEach(chap => {
+      const div = document.createElement('div');
+      div.className = 'card chapter-card';
+      div.innerHTML = `<h3>${chap}</h3>`;
+      div.onclick = () => { currentChapter = chap; showTypes(); };
+      screen.appendChild(div);
+    });
   }
 
-  function loadQuestions(mode) {
-    const listContainer = document.getElementById('questionList');
-    listContainer.innerHTML = ''; // Clear previous questions
-    const sourceData = currentSubjectData[currentChapter];
-    
-    const questions = mode === 'mcq' ? sourceData.mcq : sourceData.short;
+  function showTypes() {
+    toggleScreen('typeScreen');
+    const screen = document.getElementById('typeScreen');
+    const chapData = currentBook[currentChapter];
+    screen.innerHTML = `<h1>✨ ${currentChapter}</h1><p style="text-align:center">What kind of challenge do you want?</p>`;
+    ['mcq', 'short', 'passage'].forEach(type => {
+      if(chapData[type] && chapData[type].length > 0) {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<h3>${type === 'mcq' ? '🎮 Quick Quiz' : (type === 'short' ? '📝 Short Questions' : '📖 Big Challenges')}</h3>`;
+        div.onclick = () => loadQuestions(type);
+        screen.appendChild(div);
+      }
+    });
+  }
 
-    questions.forEach((q, i) => {
+  function loadQuestions(type) {
+    toggleScreen('questionScreen');
+    const screen = document.getElementById('questionScreen');
+    const questions = currentBook[currentChapter][type];
+    screen.innerHTML = `<h1>🎯 Let's Go!</h1>`;
+
+    questions.forEach((q, qIdx) => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.style.cursor = 'default';
+      
+      // Check for Image Questions
+      let imgTag = q.img ? `<img src="${q.img}" class="q-img" alt="Look at this picture">` : '';
+      div.innerHTML = `${imgTag}<p style="font-size:1.2rem"><strong>${qIdx+1}.</strong> ${q.q}</p>`;
 
-      // Text question
-      div.innerHTML += `<p><strong>${i+1}.</strong> ${q.q}</p>`;
-
-      if (mode === 'mcq') {
-        // Quiz Mode
-        q.opts.forEach((opt, oi) => {
+      if(type === 'mcq') {
+        q.opts.forEach((opt, oIdx) => {
           const optDiv = document.createElement('div');
           optDiv.className = 'option';
+          optDiv.id = `q${qIdx}o${oIdx}`;
           optDiv.textContent = opt;
-          optDiv.onclick = () => {
-            if (oi === q.ans) optDiv.classList.add('correct');
-            else optDiv.classList.add('wrong');
-          };
+          optDiv.onclick = () => checkMCQ(qIdx, oIdx, q.ans);
           div.appendChild(optDiv);
         });
       } else {
-        // Show Answer Mode
-        div.innerHTML += `<button class="btn-action" style="background:#6366f1; width:100%" onclick="this.nextElementSibling.style.display='block'">💡 View Answer</button>
-                          <div class="ans-box"><strong>Correct Answer:</strong><br>${(q.a || "").replace(/\n/g, '<br>')}</div>`;
+        div.innerHTML += `<button class="show-btn" onclick="document.getElementById('ans${qIdx}').style.display='block'">💡 Peek at Answer</button>
+                          <div id="ans${qIdx}" class="ans-box"><strong>The Answer is:</strong><br>${(q.a || "").replace(/\n/g, '<br>')}</div>`;
       }
-      listContainer.appendChild(div);
+      screen.appendChild(div);
     });
-    window.scrollTo(0,0);
   }
 
-  function switchScreen(screenId) {
+  function checkMCQ(qIdx, selectedIdx, correctIdx) {
+    const correctId = `q${qIdx}o${correctIdx}`;
+    document.getElementById(correctId).classList.add('correct');
+    if(selectedIdx !== correctIdx) {
+      document.getElementById(`q${qIdx}o${selectedIdx}`).classList.add('wrong');
+    }
+  }
+
+  function toggleScreen(id) {
     document.getElementById('subjectScreen').classList.add('hidden');
     document.getElementById('chapterScreen').classList.add('hidden');
+    document.getElementById('typeScreen').classList.add('hidden');
     document.getElementById('questionScreen').classList.add('hidden');
-    document.getElementById(screenId).classList.remove('hidden');
+    document.getElementById(id).classList.remove('hidden');
+    document.getElementById('backBtn').classList.remove('hidden');
     window.scrollTo(0,0);
   }
 
-  function goBack(to) {
-    if(to === 'subject') switchScreen('subjectScreen');
-    if(to === 'chapter') switchScreen('chapterScreen');
-  }
-
+  function goBack() { location.reload(); }
   init();
 </script>
 </body>
