@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🚀 Class 10 Study App</title>
+  <title>📚 Class 10 Study App - FIXED Version</title>
   
-  <script src="questions_db.js"></script> <script src="science_questions_db.js"></script>
+  <script src="questions_db.js"></script>
+  <script src="science_questions_db.js"></script>
   <script src="social_hist_questions_db.js"></script>
   <script src="social_ci_questions_db.js"></script>
   <script src="social_dp_questions_db.js"></script>
@@ -19,130 +20,151 @@
     :root { --primary: #4f46e5; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
     .container { max-width: 600px; margin: 0 auto; }
-    .header { text-align: center; padding: 20px 0; }
-    .card { background: var(--card); padding: 20px; margin: 12px 0; border-radius: 16px; border: 2px solid #e2e8f0; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: 0.2s; }
+    .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 10px; }
+    .card { background: var(--card); padding: 20px; margin: 12px 0; border-radius: 16px; border: 2px solid #e2e8f0; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .card:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .btn-back { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; cursor: pointer; width: 100%; }
-    .option { border: 2px solid #f1f5f9; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; font-weight: 500; }
+    .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px; }
+    .btn-back { background: #ef4444; margin-bottom: 20px; width: 100%; }
+    .option { border: 2px solid #f1f5f9; padding: 12px; margin: 8px 0; border-radius: 12px; cursor: pointer; }
     .correct { background: #22c55e !important; color: white; border-color: #16a34a; }
     .wrong { background: #ef4444 !important; color: white; border-color: #dc2626; }
     .ans-box { background: #fef9c3; padding: 15px; border-radius: 12px; display: none; margin-top: 10px; border: 1px dashed #eab308; line-height: 1.5; }
     .hidden { display: none; }
-    .q-img { width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid #ddd; }
+    .mode-btn-container { text-align: center; margin-bottom: 20px; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div id="main-screen">
+  <div id="subjectScreen">
     <div class="header"><h1>📚 Class 10 Subjects</h1></div>
-    <div id="subject-list"></div>
+    <div id="subjectList"></div>
   </div>
 
-  <div id="sub-screen" class="hidden">
-    <button class="btn-back" onclick="location.reload()">⬅️ Back to Subjects</button>
-    <div id="content-area"></div>
+  <div id="chapterScreen" class="hidden">
+    <button class="btn-back btn-action" onclick="goBack('subject')">⬅️ Back to Subjects</button>
+    <div id="chapterList"></div>
+  </div>
+
+  <div id="questionScreen" class="hidden">
+    <button class="btn-back btn-action" onclick="goBack('chapter')">⬅️ Back to Chapters</button>
+    <div class="mode-btn-container">
+        <button id="showMCQ" class="btn-action" onclick="loadQuestions('mcq')">🎮 Start Quiz (MCQs)</button>
+        <button id="showTheory" class="btn-action" onclick="loadQuestions('theory')">📖 Practice (Short Answers)</button>
+    </div>
+    <div id="questionList"></div>
   </div>
 </div>
 
 <script>
-  // MAPPING TO YOUR ACTUAL JS VARIABLES
-  const config = [
-    { label: "📐 Mathematics", file: "questions_db.js", var: "QUESTIONS_DB", key: "mathematics" },
-    { label: "🧪 Science", file: "science_questions_db.js", var: "SCIENCE_QUESTIONS_DB", key: "science" },
-    { label: "📜 History", file: "social_hist_questions_db.js", var: "SOCIAL_HIST_QUESTIONS_DB", key: "social_hist" },
-    { label: "🌍 Geography", file: "social_ci_questions_db.js", var: "SOCIAL_CI_QUESTIONS_DB", key: "social_ci" },
-    { label: "⚖️ Civics", file: "social_dp_questions_db.js", var: "SOCIAL_DP_QUESTIONS_DB", key: "social_dp" },
-    { label: "💰 Economics", file: "social_eco_questions_db.js", var: "SOCIAL_ECO_QUESTIONS_DB", key: "social_eco" },
-    { label: "👟 HPE & Sports", file: "hpe_questions_db.js", var: "HPE_QUESTIONS_DB", key: "hpe" },
-    { label: "📖 English (First Flight)", file: "english_ff_questions_db.js", var: "ENGLISH_FF_QUESTIONS_DB", key: "english_ff" },
-    { label: "🐕 English (Footprints)", file: "english_fp_questions_db.js", var: "ENGLISH_FP_QUESTIONS_DB", key: "english_fp" },
-    { label: "✍️ English (Writing)", file: "english_we_questions_db.js", var: "ENGLISH_WE_QUESTIONS_DB", key: "english_we" }
+  // MANDATORY CONFIGURATION: This matches your 10 files and their variables exactly.
+  const subjects = [
+    { label: "📐 Mathematics", var: "QUESTIONS_DB", key: "mathematics" },
+    { label: "🧪 Science", var: "SCIENCE_QUESTIONS_DB", key: "science" },
+    { label: "📜 History", var: "SOCIAL_HIST_QUESTIONS_DB", key: "social_hist" },
+    { label: "🌍 Geography", var: "SOCIAL_CI_QUESTIONS_DB", key: "social_ci" },
+    { label: "⚖️ Civics", var: "SOCIAL_DP_QUESTIONS_DB", key: "social_dp" },
+    { name: "💰 Economics", var: "SOCIAL_ECO_QUESTIONS_DB", key: "social_eco" },
+    { label: "👟 Health & Sports Ed", var: "HPE_QUESTIONS_DB", key: "hpe" },
+    { label: "📖 English (First Flight)", var: "ENGLISH_FF_QUESTIONS_DB", key: "english_ff" },
+    { label: "🐕 English (Footprints)", var: "ENGLISH_FP_QUESTIONS_DB", key: "english_fp" },
+    { label: "✍️ English (WE)", var: "ENGLISH_WE_QUESTIONS_DB", key: "english_we" }
   ];
 
-  let activeData = null;
+  let currentSubjectData = null;
+  let currentChapter = null;
 
   function init() {
-    const list = document.getElementById('subject-list');
-    config.forEach(item => {
+    const list = document.getElementById('subjectList');
+    subjects.forEach(sub => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.innerHTML = `<h3>${item.label}</h3>`;
+      div.innerHTML = `<h3>${sub.label}</h3>`;
       div.onclick = () => {
-        if (!window[item.var]) {
-          alert(`Missing File: ${item.file}\nPlease make sure you uploaded it to GitHub!`);
+        // Simple error checking: if the file didn't load, alert the user.
+        if (typeof window[sub.var] === 'undefined') {
+          alert(`TECHNICAL ERROR: The data file for ${sub.label} did not load.\n\nPlease check your GitHub to ensure the file is named correctly.`);
           return;
         }
-        activeData = window[item.var][item.key];
-        showChapters(item.label);
+        currentSubjectData = window[sub.var][sub.key];
+        showChapters(sub.label);
       };
       list.appendChild(div);
     });
   }
 
-  function showChapters(title) {
-    toggleView(true);
-    const area = document.getElementById('content-area');
-    area.innerHTML = `<h1>${title}</h1>`;
-    Object.keys(activeData).forEach(chap => {
+  function showChapters(subjectTitle) {
+    switchScreen('chapterScreen');
+    const screen = document.getElementById('chapterList');
+    screen.innerHTML = `<h1>📍 ${subjectTitle}: Chapters</h1>`;
+    Object.keys(currentSubjectData).forEach(chapName => {
       const div = document.createElement('div');
       div.className = 'card';
-      div.innerHTML = `<h4>${chap}</h4>`;
-      div.onclick = () => showTypes(chap);
-      area.appendChild(div);
+      div.innerHTML = `<h4>${chapName}</h4>`;
+      div.onclick = () => showModes(chapName);
+      screen.appendChild(div);
     });
   }
 
-  function showTypes(chapName) {
-    const area = document.getElementById('content-area');
-    area.innerHTML = `<h1>${chapName}</h1>`;
-    const chap = activeData[chapName];
+  function showModes(chapName) {
+    switchScreen('questionScreen');
+    currentChapter = chapName;
+    const chapData = currentSubjectData[chapName];
+    document.getElementById('questionList').innerHTML = `<h1>⚡ Practice: ${chapName}</h1><p>Select a mode above to begin.</p>`;
     
-    ['mcq', 'short', 'passage'].forEach(type => {
-      if (chap[type] && chap[type].length > 0) {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `<h3>${type.toUpperCase()} Questions</h3>`;
-        div.onclick = () => renderQuestions(chap[type], type);
-        area.appendChild(div);
-      }
-    });
+    // Hide buttons if that data type doesn't exist for this chapter
+    document.getElementById('showMCQ').style.display = chapData.mcq ? 'inline-block' : 'none';
+    document.getElementById('showTheory').style.display = chapData.short ? 'inline-block' : 'none';
   }
 
-  function renderQuestions(list, type) {
-    const area = document.getElementById('content-area');
-    area.innerHTML = `<h2>Practice Mode</h2>`;
-    list.forEach((q, i) => {
+  function loadQuestions(mode) {
+    const listContainer = document.getElementById('questionList');
+    listContainer.innerHTML = ''; // Clear previous questions
+    const sourceData = currentSubjectData[currentChapter];
+    
+    const questions = mode === 'mcq' ? sourceData.mcq : sourceData.short;
+
+    questions.forEach((q, i) => {
       const div = document.createElement('div');
       div.className = 'card';
       div.style.cursor = 'default';
 
-      if(q.img) div.innerHTML += `<img src="${q.img}" class="q-img" onerror="this.remove()">`;
+      // Text question
       div.innerHTML += `<p><strong>${i+1}.</strong> ${q.q}</p>`;
 
-      if (type === 'mcq') {
+      if (mode === 'mcq') {
+        // Quiz Mode
         q.opts.forEach((opt, oi) => {
-          const oDiv = document.createElement('div');
-          oDiv.className = 'option';
-          oDiv.textContent = opt;
-          oDiv.onclick = () => {
-            if (oi === q.ans) oDiv.classList.add('correct');
-            else oDiv.classList.add('wrong');
+          const optDiv = document.createElement('div');
+          optDiv.className = 'option';
+          optDiv.textContent = opt;
+          optDiv.onclick = () => {
+            if (oi === q.ans) optDiv.classList.add('correct');
+            else optDiv.classList.add('wrong');
           };
-          div.appendChild(oDiv);
+          div.appendChild(optDiv);
         });
       } else {
-        div.innerHTML += `<button class="btn-back" style="background:#6366f1" onclick="this.nextElementSibling.style.display='block'">💡 View Answer</button>
-                          <div class="ans-box">${(q.a || "").replace(/\n/g, '<br>')}</div>`;
+        // Show Answer Mode
+        div.innerHTML += `<button class="btn-action" style="background:#6366f1; width:100%" onclick="this.nextElementSibling.style.display='block'">💡 View Answer</button>
+                          <div class="ans-box"><strong>Correct Answer:</strong><br>${(q.a || "").replace(/\n/g, '<br>')}</div>`;
       }
-      area.appendChild(div);
+      listContainer.appendChild(div);
     });
+    window.scrollTo(0,0);
   }
 
-  function toggleView(isSub) {
-    document.getElementById('main-screen').classList.toggle('hidden', isSub);
-    document.getElementById('sub-screen').classList.toggle('hidden', !isSub);
+  function switchScreen(screenId) {
+    document.getElementById('subjectScreen').classList.add('hidden');
+    document.getElementById('chapterScreen').classList.add('hidden');
+    document.getElementById('questionScreen').classList.add('hidden');
+    document.getElementById(screenId).classList.remove('hidden');
     window.scrollTo(0,0);
+  }
+
+  function goBack(to) {
+    if(to === 'subject') switchScreen('subjectScreen');
+    if(to === 'chapter') switchScreen('chapterScreen');
   }
 
   init();
