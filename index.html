@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🌟 Super Study Adventure</title>
   
-  <script src="questions_db.js"></script>
   <script src="math_questions_db.js"></script>
   <script src="science_questions_db.js"></script>
   <script src="social_hist_questions_db.js"></script>
@@ -18,147 +17,144 @@
   <script src="hpe_questions_db.js"></script>
 
   <style>
-    :root { --primary: #6366f1; --secondary: #a855f7; --success: #22c55e; --danger: #ef4444; --bg: #f0f9ff; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: #1e293b; }
-    .container { max-width: 600px; margin: 0 auto; }
-    h1 { text-align: center; color: var(--primary); }
-    .card { background: white; padding: 20px; margin: 15px 0; border-radius: 20px; border: 3px solid #e2e8f0; cursor: pointer; box-shadow: 0 8px 0 #cbd5e1; transition: 0.2s; }
-    .card:active { transform: translateY(5px); box-shadow: 0 2px 0 #cbd5e1; }
-    .btn-back { background: #f87171; color: white; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; margin-bottom: 20px; box-shadow: 0 4px 0 #b91c1c; }
-    .option { border: 2px solid #e2e8f0; padding: 15px; margin: 10px 0; border-radius: 15px; font-weight: bold; background: #fff; }
-    .correct { background: var(--success) !important; color: white; border-color: #15803d; }
-    .wrong { background: var(--danger) !important; color: white; border-color: #b91c1c; }
-    .ans-box { background: #fef9c3; padding: 15px; margin-top: 15px; border-radius: 15px; display: none; border: 2px dashed #facc15; }
+    :root { --primary: #6366f1; --secondary: #a855f7; --success: #22c55e; --danger: #ef4444; --bg: #f8fafc; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+    .container { max-width: 650px; margin: 0 auto; }
+    .card { background: white; padding: 25px; margin: 15px 0; border-radius: 24px; border: 2px solid #e2e8f0; cursor: pointer; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); transition: all 0.2s; }
+    .card:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .btn-back { background: var(--danger); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; margin-bottom: 20px; cursor: pointer; }
+    .option { border: 2px solid #f1f5f9; padding: 16px; margin: 10px 0; border-radius: 16px; background: #fff; font-weight: 500; transition: 0.2s; }
+    .correct { background: var(--success) !important; color: white; border-color: #16a34a; }
+    .wrong { background: var(--danger) !important; color: white; border-color: #dc2626; }
+    .ans-box { background: #fef9c3; padding: 20px; border-radius: 16px; display: none; margin-top: 15px; border: 2px dashed #facc15; line-height: 1.6; }
     .hidden { display: none; }
-    .q-img { width: 100%; border-radius: 10px; margin-bottom: 10px; display: block; }
-    .loader-screen { text-align: center; padding: 50px; font-weight: bold; color: var(--primary); }
+    .q-img { width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+    .status-badge { text-align: center; font-size: 0.9rem; color: var(--primary); margin-bottom: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div id="loadingScreen" class="loader-screen">🏗️ Building your classroom...</div>
+  <div id="status" class="status-badge">⏳ System Initializing...</div>
   <button id="backBtn" class="btn-back hidden" onclick="location.reload()">🏠 Home</button>
   
-  <div id="subjectScreen" class="hidden"><h1>🚀 Select a Subject</h1></div>
+  <div id="subjectScreen"><h1>📚 Class 10 Study App</h1></div>
   <div id="chapterScreen" class="hidden"></div>
   <div id="typeScreen" class="hidden"></div>
   <div id="questionScreen" class="hidden"></div>
 </div>
 
 <script>
-  const subjectList = [
-    { name: '📐 Math', vars: ['QUESTIONS_DB'], key: 'mathematics' },
-    { name: '🧪 Science', vars: ['SCIENCE_QUESTIONS_DB'], key: 'science' },
-    { name: '📜 History', vars: ['SOCIAL_HIST_QUESTIONS_DB'], key: 'social_hist' },
-    { name: '🌍 Geography', vars: ['SOCIAL_CI_QUESTIONS_DB'], key: 'social_ci' },
-    { name: '⚖️ Civics', vars: ['SOCIAL_DP_QUESTIONS_DB'], key: 'social_dp' },
-    { name: '💰 Economics', vars: ['SOCIAL_ECO_QUESTIONS_DB'], key: 'social_eco' },
-    { name: '👟 HPE & Sports', vars: ['HPE_QUESTIONS_DB'], key: 'hpe' },
-    { name: '📖 English (FF)', vars: ['ENGLISH_FF_QUESTIONS_DB'], key: 'english_ff' },
-    { name: '🐕 English (FP)', vars: ['ENGLISH_FP_QUESTIONS_DB'], key: 'english_fp' },
-    { name: '✍️ English (WE)', vars: ['ENGLISH_WE_QUESTIONS_DB'], key: 'english_we' }
+  // This map links the Button Name -> Variable in JS -> Key inside that Variable
+  const config = [
+    { label: '📐 Mathematics', var: 'QUESTIONS_DB', key: 'mathematics' },
+    { label: '🧪 Science', var: 'SCIENCE_QUESTIONS_DB', key: 'science' },
+    { label: '📜 History', var: 'SOCIAL_HIST_QUESTIONS_DB', key: 'social_hist' },
+    { label: '🌍 Geography', var: 'SOCIAL_CI_QUESTIONS_DB', key: 'social_ci' },
+    { label: '⚖️ Civics', var: 'SOCIAL_DP_QUESTIONS_DB', key: 'social_dp' },
+    { label: '💰 Economics', var: 'SOCIAL_ECO_QUESTIONS_DB', key: 'social_eco' },
+    { label: '👟 HPE & Sports', var: 'HPE_QUESTIONS_DB', key: 'hpe' },
+    { label: '📖 English (FF)', var: 'ENGLISH_FF_QUESTIONS_DB', key: 'english_ff' },
+    { label: '🐕 English (FP)', var: 'ENGLISH_FP_QUESTIONS_DB', key: 'english_fp' },
+    { label: '✍️ English (WE)', var: 'ENGLISH_WE_QUESTIONS_DB', key: 'english_we' }
   ];
 
-  let currentData = null;
-  let currentChapter = null;
+  let activeData = null;
+  let activeChapter = null;
 
   window.onload = () => {
-    document.getElementById('loadingScreen').classList.add('hidden');
-    document.getElementById('subjectScreen').classList.remove('hidden');
-    renderSubjects();
+    document.getElementById('status').innerHTML = "✅ All Systems Ready";
+    renderMenu();
   };
 
-  function renderSubjects() {
-    const screen = document.getElementById('subjectScreen');
-    subjectList.forEach(sub => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<h2>${sub.name}</h2>`;
-      div.onclick = () => {
-        // Try to find the data in any of the possible variable names
-        let foundData = null;
-        sub.vars.forEach(v => { if(window[v]) foundData = window[v][sub.key]; });
-
-        if (foundData) {
-          currentData = foundData;
-          showChapters(sub.name);
-        } else {
-          alert(`⚠️ Technical Error: I can't find the data for ${sub.name}.\n\nPlease check if the file ${sub.vars[0].toLowerCase()}.js is uploaded to GitHub.`);
+  function renderMenu() {
+    const container = document.getElementById('subjectScreen');
+    config.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<h2>${item.label}</h2>`;
+      card.onclick = () => {
+        if (!window[item.var]) {
+          alert(`Missing File: Please ensure "${item.var.toLowerCase()}.js" is uploaded correctly.`);
+          return;
         }
+        activeData = window[item.var][item.key];
+        showChapters(item.label);
       };
-      screen.appendChild(div);
+      container.appendChild(card);
     });
   }
 
-  function showChapters(name) {
-    toggleScreen('chapterScreen');
+  function showChapters(title) {
+    switchView('chapterScreen');
     const screen = document.getElementById('chapterScreen');
-    screen.innerHTML = `<h1>📍 ${name}</h1>`;
-    Object.keys(currentData).forEach(chap => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<h3>${chap}</h3>`;
-      div.onclick = () => { currentChapter = chap; showTypes(); };
-      screen.appendChild(div);
+    screen.innerHTML = `<h1>${title}</h1>`;
+    Object.keys(activeData).forEach(chap => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<h3>${chap}</h3>`;
+      card.onclick = () => { activeChapter = chap; showModes(); };
+      screen.appendChild(card);
     });
   }
 
-  function showTypes() {
-    toggleScreen('typeScreen');
+  function showModes() {
+    switchView('typeScreen');
     const screen = document.getElementById('typeScreen');
-    const chapData = currentData[currentChapter];
-    screen.innerHTML = `<h1>✨ ${currentChapter}</h1>`;
-    ['mcq', 'short', 'passage'].forEach(type => {
-      if(chapData[type] && chapData[type].length > 0) {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `<h3>${type.toUpperCase()} Mode</h3>`;
-        div.onclick = () => loadQuestions(type);
-        screen.appendChild(div);
+    screen.innerHTML = `<h1>${activeChapter}</h1><p>Select Study Mode:</p>`;
+    const chapData = activeData[activeChapter];
+    
+    ['mcq', 'short', 'passage'].forEach(mode => {
+      if (chapData[mode] && chapData[mode].length > 0) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h3>${mode.toUpperCase()} Questions</h3>`;
+        card.onclick = () => renderQuestions(mode);
+        screen.appendChild(card);
       }
     });
   }
 
-  function loadQuestions(type) {
-    toggleScreen('questionScreen');
+  function renderQuestions(mode) {
+    switchView('questionScreen');
     const screen = document.getElementById('questionScreen');
-    const questions = currentData[currentChapter][type];
-    screen.innerHTML = `<h1>🎯 Solve!</h1>`;
+    const list = activeData[activeChapter][mode];
+    screen.innerHTML = `<h2>${activeChapter} (${mode.toUpperCase()})</h2>`;
 
-    questions.forEach((q, qIdx) => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      
-      // IMAGE SUPPORT: Checks for "img" property in your .js files
-      if (q.img) {
-        div.innerHTML += `<img src="${q.img}" class="q-img" onerror="this.remove()">`;
+    list.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.cursor = 'default';
+
+      // IMAGE LOADING LOGIC
+      if (item.img) {
+        card.innerHTML += `<img src="${item.img}" class="q-img" onerror="this.remove()">`;
       }
 
-      div.innerHTML += `<p><strong>${qIdx+1}.</strong> ${q.q}</p>`;
+      card.innerHTML += `<p><strong>Q${idx+1}:</strong> ${item.q}</p>`;
 
-      if(type === 'mcq') {
-        q.opts.forEach((opt, oIdx) => {
-          const btn = document.createElement('div');
-          btn.className = 'option';
-          btn.id = `q${qIdx}o${oIdx}`;
-          btn.textContent = opt;
-          btn.onclick = () => {
-            document.getElementById(`q${qIdx}o${q.ans}`).classList.add('correct');
-            if(oIdx !== q.ans) btn.classList.add('wrong');
+      if (mode === 'mcq') {
+        item.opts.forEach((opt, oIdx) => {
+          const optDiv = document.createElement('div');
+          optDiv.className = 'option';
+          optDiv.id = `q${idx}o${oIdx}`;
+          optDiv.textContent = opt;
+          optDiv.onclick = () => {
+            document.getElementById(`q${idx}o${item.ans}`).classList.add('correct');
+            if (oIdx !== item.ans) optDiv.classList.add('wrong');
           };
-          div.appendChild(btn);
+          card.appendChild(optDiv);
         });
       } else {
-        div.innerHTML += `<button class="btn-back" style="background:var(--secondary)" onclick="document.getElementById('ans${qIdx}').style.display='block'">💡 Answer</button>
-                          <div id="ans${qIdx}" class="ans-box">${(q.a || "").replace(/\n/g, '<br>')}</div>`;
+        card.innerHTML += `<button class="btn-back" style="background:var(--secondary); width:100%" onclick="this.nextElementSibling.style.display='block'">Show Answer</button>
+                          <div class="ans-box">${item.a.replace(/\n/g, '<br>')}</div>`;
       }
-      screen.appendChild(div);
+      screen.appendChild(card);
     });
   }
 
-  function toggleScreen(id) {
-    document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
+  function switchView(id) {
+    document.querySelectorAll('.container > div:not(.status-badge)').forEach(d => d.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     document.getElementById('backBtn').classList.remove('hidden');
     window.scrollTo(0,0);
