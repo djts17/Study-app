@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🌟 Super Study Adventure</title>
   
+  <script src="questions_db.js"></script>
   <script src="math_questions_db.js"></script>
   <script src="science_questions_db.js"></script>
   <script src="social_hist_questions_db.js"></script>
@@ -18,9 +19,9 @@
 
   <style>
     :root { --primary: #6366f1; --secondary: #a855f7; --success: #22c55e; --danger: #ef4444; --bg: #f0f9ff; }
-    body { font-family: 'Comic Sans MS', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: #1e293b; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: #1e293b; }
     .container { max-width: 600px; margin: 0 auto; }
-    h1 { text-align: center; color: var(--primary); text-shadow: 2px 2px #fff; }
+    h1 { text-align: center; color: var(--primary); }
     .card { background: white; padding: 20px; margin: 15px 0; border-radius: 20px; border: 3px solid #e2e8f0; cursor: pointer; box-shadow: 0 8px 0 #cbd5e1; transition: 0.2s; }
     .card:active { transform: translateY(5px); box-shadow: 0 2px 0 #cbd5e1; }
     .btn-back { background: #f87171; color: white; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; margin-bottom: 20px; box-shadow: 0 4px 0 #b91c1c; }
@@ -29,60 +30,62 @@
     .wrong { background: var(--danger) !important; color: white; border-color: #b91c1c; }
     .ans-box { background: #fef9c3; padding: 15px; margin-top: 15px; border-radius: 15px; display: none; border: 2px dashed #facc15; }
     .hidden { display: none; }
-    .q-img { width: 100%; border-radius: 10px; margin-bottom: 10px; border: 2px solid #ddd; }
-    .loading-msg { text-align: center; color: #6366f1; font-weight: bold; margin-top: 50px; }
+    .q-img { width: 100%; border-radius: 10px; margin-bottom: 10px; display: block; }
+    .loader-screen { text-align: center; padding: 50px; font-weight: bold; color: var(--primary); }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div id="loader" class="loading-msg">✨ Casting Spells... (Loading Files)</div>
+  <div id="loadingScreen" class="loader-screen">🏗️ Building your classroom...</div>
   <button id="backBtn" class="btn-back hidden" onclick="location.reload()">🏠 Home</button>
-  <div id="subjectScreen" class="hidden"><h1>🚀 Study Adventure!</h1></div>
+  
+  <div id="subjectScreen" class="hidden"><h1>🚀 Select a Subject</h1></div>
   <div id="chapterScreen" class="hidden"></div>
   <div id="typeScreen" class="hidden"></div>
   <div id="questionScreen" class="hidden"></div>
 </div>
 
 <script>
-  // This is the master list. The "var" must match the first line of your .js files.
-  const subjects = [
-    { name: '📐 Math', var: 'QUESTIONS_DB', key: 'mathematics' },
-    { name: '🧪 Science', var: 'SCIENCE_QUESTIONS_DB', key: 'science' },
-    { name: '📜 History', var: 'SOCIAL_HIST_QUESTIONS_DB', key: 'social_hist' },
-    { name: '🌍 Geography', var: 'SOCIAL_CI_QUESTIONS_DB', key: 'social_ci' },
-    { name: '⚖️ Civics', var: 'SOCIAL_DP_QUESTIONS_DB', key: 'social_dp' },
-    { name: '💰 Economics', var: 'SOCIAL_ECO_QUESTIONS_DB', key: 'social_eco' },
-    { name: '👟 HPE & Sports', var: 'HPE_QUESTIONS_DB', key: 'hpe' },
-    { name: '📖 English (FF)', var: 'ENGLISH_FF_QUESTIONS_DB', key: 'english_ff' },
-    { name: '🐕 English (FP)', var: 'ENGLISH_FP_QUESTIONS_DB', key: 'english_fp' },
-    { name: '✍️ English (WE)', var: 'ENGLISH_WE_QUESTIONS_DB', key: 'english_we' }
+  const subjectList = [
+    { name: '📐 Math', vars: ['QUESTIONS_DB'], key: 'mathematics' },
+    { name: '🧪 Science', vars: ['SCIENCE_QUESTIONS_DB'], key: 'science' },
+    { name: '📜 History', vars: ['SOCIAL_HIST_QUESTIONS_DB'], key: 'social_hist' },
+    { name: '🌍 Geography', vars: ['SOCIAL_CI_QUESTIONS_DB'], key: 'social_ci' },
+    { name: '⚖️ Civics', vars: ['SOCIAL_DP_QUESTIONS_DB'], key: 'social_dp' },
+    { name: '💰 Economics', vars: ['SOCIAL_ECO_QUESTIONS_DB'], key: 'social_eco' },
+    { name: '👟 HPE & Sports', vars: ['HPE_QUESTIONS_DB'], key: 'hpe' },
+    { name: '📖 English (FF)', vars: ['ENGLISH_FF_QUESTIONS_DB'], key: 'english_ff' },
+    { name: '🐕 English (FP)', vars: ['ENGLISH_FP_QUESTIONS_DB'], key: 'english_fp' },
+    { name: '✍️ English (WE)', vars: ['ENGLISH_WE_QUESTIONS_DB'], key: 'english_we' }
   ];
 
   let currentData = null;
   let currentChapter = null;
 
-  // Wait for everything to load before showing subjects
-  window.onload = function() {
-    document.getElementById('loader').classList.add('hidden');
+  window.onload = () => {
+    document.getElementById('loadingScreen').classList.add('hidden');
     document.getElementById('subjectScreen').classList.remove('hidden');
-    init();
+    renderSubjects();
   };
 
-  function init() {
+  function renderSubjects() {
     const screen = document.getElementById('subjectScreen');
-    subjects.forEach(sub => {
+    subjectList.forEach(sub => {
       const div = document.createElement('div');
       div.className = 'card';
       div.innerHTML = `<h2>${sub.name}</h2>`;
       div.onclick = () => {
-        // Validation check
-        if (typeof window[sub.var] === 'undefined') {
-          alert(`Error: The file for ${sub.name} is missing or named incorrectly on GitHub. Check ${sub.var}.`);
-          return;
+        // Try to find the data in any of the possible variable names
+        let foundData = null;
+        sub.vars.forEach(v => { if(window[v]) foundData = window[v][sub.key]; });
+
+        if (foundData) {
+          currentData = foundData;
+          showChapters(sub.name);
+        } else {
+          alert(`⚠️ Technical Error: I can't find the data for ${sub.name}.\n\nPlease check if the file ${sub.vars[0].toLowerCase()}.js is uploaded to GitHub.`);
         }
-        currentData = window[sub.var][sub.key];
-        showChapters(sub.name);
       };
       screen.appendChild(div);
     });
@@ -121,33 +124,33 @@
     toggleScreen('questionScreen');
     const screen = document.getElementById('questionScreen');
     const questions = currentData[currentChapter][type];
-    screen.innerHTML = `<h1>🎯 Good Luck!</h1>`;
+    screen.innerHTML = `<h1>🎯 Solve!</h1>`;
 
     questions.forEach((q, qIdx) => {
       const div = document.createElement('div');
       div.className = 'card';
-
-      // Displays image if the data contains an "img" link
+      
+      // IMAGE SUPPORT: Checks for "img" property in your .js files
       if (q.img) {
-         div.innerHTML += `<img src="${q.img}" class="q-img" onerror="this.style.display='none'">`;
+        div.innerHTML += `<img src="${q.img}" class="q-img" onerror="this.remove()">`;
       }
 
-      div.innerHTML += `<p style="font-size:1.1rem"><strong>${qIdx+1}.</strong> ${q.q}</p>`;
+      div.innerHTML += `<p><strong>${qIdx+1}.</strong> ${q.q}</p>`;
 
       if(type === 'mcq') {
         q.opts.forEach((opt, oIdx) => {
-          const optBtn = document.createElement('div');
-          optBtn.className = 'option';
-          optBtn.id = `q${qIdx}o${oIdx}`;
-          optBtn.textContent = opt;
-          optBtn.onclick = () => {
+          const btn = document.createElement('div');
+          btn.className = 'option';
+          btn.id = `q${qIdx}o${oIdx}`;
+          btn.textContent = opt;
+          btn.onclick = () => {
             document.getElementById(`q${qIdx}o${q.ans}`).classList.add('correct');
-            if(oIdx !== q.ans) optBtn.classList.add('wrong');
+            if(oIdx !== q.ans) btn.classList.add('wrong');
           };
-          div.appendChild(optBtn);
+          div.appendChild(btn);
         });
       } else {
-        div.innerHTML += `<button class="btn-back" style="background:var(--secondary);box-shadow:0 4px 0 #7e22ce" onclick="document.getElementById('ans${qIdx}').style.display='block'">💡 View Answer</button>
+        div.innerHTML += `<button class="btn-back" style="background:var(--secondary)" onclick="document.getElementById('ans${qIdx}').style.display='block'">💡 Answer</button>
                           <div id="ans${qIdx}" class="ans-box">${(q.a || "").replace(/\n/g, '<br>')}</div>`;
       }
       screen.appendChild(div);
@@ -155,7 +158,7 @@
   }
 
   function toggleScreen(id) {
-    ['subjectScreen', 'chapterScreen', 'typeScreen', 'questionScreen'].forEach(s => document.getElementById(s).classList.add('hidden'));
+    document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     document.getElementById('backBtn').classList.remove('hidden');
     window.scrollTo(0,0);
