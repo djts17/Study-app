@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Class 10 Study App</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════ VARIABLES ═══════════════════════════ */
+:root{
+  --bg:#0b0d12; --sur:#13161e; --card:#1a1d28; --card2:#1f2235;
+  --bdr:#252a3a; --bdr2:#2e3450;
+  --acc:#7c6dff; --acc-dim:rgba(124,109,255,.12);
+  --grn:#00c9a7; --grn-dim:rgba(0,201,167,.12);
+  --yel:#ffcb47; --yel-dim:rgba(255,203,71,.12);
+  --red:#ff5c5c; --red-dim:rgba(255,92,92,.12);
+  --ora:#ff8c42; --ora-dim:rgba(255,140,66,.12);
+  --txt:#dde1f0; --muted:#6b7394; --faint:#3d4460;
+  --r:14px; --rs:9px; --rx:20px;
+  --font:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
+  --sh:0 4px 24px rgba(0,0,0,.5);
+  --sh2:0 8px 40px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+button,input{font-family:var(--font)}
+
+/* ═══════════════════════════ SCREENS ═══════════════════════════ */
+.screen{display:none;min-height:100vh;flex-direction:column;animation:fadeIn .2s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ═══════════════════════════ TOPBAR ═══════════════════════════ */
+.topbar{
+  background:var(--sur);border-bottom:1px solid var(--bdr);
+  padding:13px 18px;display:flex;align-items:center;gap:11px;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);
+}
+.logo{font-size:1.1rem;font-weight:800;letter-spacing:-.5px}
+.logo .hi{color:var(--acc)}.logo .lo{color:var(--grn)}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--card);border:1px solid var(--bdr);color:var(--txt);
+  padding:7px 15px;border-radius:var(--rs);cursor:pointer;
+  font-size:.82rem;font-weight:600;transition:all .15s;white-space:nowrap;
+}
+.back-btn:hover{background:var(--acc);border-color:var(--acc);color:#fff}
+.breadcrumb{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}
+.breadcrumb .crumb{cursor:pointer;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.breadcrumb .crumb:hover{color:var(--acc)}
+.breadcrumb .sep{color:var(--faint);flex-shrink:0}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-shrink:0}
+
+/* ═══════════════════════════ HERO ═══════════════════════════ */
+.hero{
+  padding:50px 20px 28px;text-align:center;
+  background:radial-gradient(ellipse 90% 55% at 50% -5%,rgba(124,109,255,.16) 0%,transparent 72%);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle 300px at 80% 120%,rgba(0,201,167,.06),transparent);
+  pointer-events:none;
+}
+.hero h1{font-size:clamp(1.75rem,5.5vw,3rem);font-weight:800;letter-spacing:-1.5px;line-height:1.08}
+.hero h1 .c1{color:var(--acc)}.hero h1 .c2{color:var(--grn)}
+.hero p{color:var(--muted);margin-top:10px;font-size:.95rem;max-width:380px;margin-inline:auto}
+.hero-pills{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.pill{background:var(--card);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:600;color:var(--muted)}
+
+/* ═══════════════════════════ SUBJECT GRID ═══════════════════════════ */
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:13px;padding:20px}
+
+.sub-card{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r);
+  padding:22px 20px;cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.sub-card:hover{transform:translateY(-3px);box-shadow:var(--sh2);border-color:var(--c)}
+.sub-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--c) 0%,transparent 55%);
+  opacity:0;transition:opacity .2s;border-radius:var(--r);
+}
+.sub-card:hover::after{opacity:.07}
+.sub-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);border-radius:3px 0 0 3px}
+.sub-icon{font-size:2rem;margin-bottom:12px;display:block}
+.sub-name{font-size:1.05rem;font-weight:700;margin-bottom:3px}
+.sub-desc{font-size:.78rem;color:var(--muted)}
+.sub-meta{
+  display:flex;align-items:center;justify-content:space-between;margin-top:14px;
+}
+.sub-tag{
+  background:var(--card2);border:1px solid var(--bdr2);
+  border-radius:var(--rx);padding:3px 10px;font-size:.7rem;font-weight:700;color:var(--c);
+}
+.sub-arr{color:var(--c);font-size:1.1rem;font-weight:700}
+
+/* ═══════════════════════════ BOOK GRID ═══════════════════════════ */
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:18px}
+.book-card{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r);
+  padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.book-card:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:var(--c)}
+.book-icon{font-size:1.8rem;margin-bottom:10px}
+.book-name{font-weight:700;font-size:.95rem;margin-bottom:4px}
+.book-cnt{font-size:.74rem;color:var(--muted)}
+.book-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);border-radius:3px 0 0 3px}
+
+/* ═══════════════════════════ SECTION HEADER ═══════════════════════════ */
+.sec-head{padding:20px 18px 0}
+.sec-title{font-size:1.3rem;font-weight:800;letter-spacing:-.5px}
+.sec-sub{color:var(--muted);font-size:.82rem;margin-top:4px}
+
+/* ═══════════════════════════ SEARCH ═══════════════════════════ */
+.search-wrap{padding:14px 18px 0}
+.search-inp{
+  width:100%;background:var(--card);border:1.5px solid var(--bdr);
+  border-radius:var(--rs);padding:10px 14px;color:var(--txt);
+  font-size:.88rem;outline:none;transition:border-color .15s;
+}
+.search-inp:focus{border-color:var(--acc)}
+.search-inp::placeholder{color:var(--muted)}
+
+/* ═══════════════════════════ CHAPTER LIST ═══════════════════════════ */
+.ch-list{padding:14px 18px;display:flex;flex-direction:column;gap:7px}
+.ch-item{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--rs);
+  padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;
+  transition:all .15s;
+}
+.ch-item:hover{border-color:var(--acc);background:var(--acc-dim);transform:translateX(3px)}
+.ch-num{
+  min-width:32px;height:32px;border-radius:8px;
+  background:var(--acc-dim);color:var(--acc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;font-family:var(--mono);flex-shrink:0;
+}
+.ch-name{font-weight:600;font-size:.92rem;flex:1;min-width:0}
+.ch-badges{display:flex;gap:5px;flex-shrink:0}
+.ch-badge{
+  font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:5px;
+  background:var(--card2);color:var(--muted);
+}
+.ch-arr{color:var(--muted);font-size:1rem;margin-left:4px}
+
+/* ═══════════════════════════ QTYPE GRID ═══════════════════════════ */
+.qt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;padding:18px}
+@media(min-width:500px){.qt-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+.qt-card{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r);
+  padding:22px 16px;cursor:pointer;text-align:center;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.qt-card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--c,var(--acc))}
+.qt-card::before{
+  content:'';position:absolute;inset:0;
+  background:var(--c,var(--acc));opacity:0;transition:opacity .2s;
+}
+.qt-card:hover::before{opacity:.05}
+.qt-icon{font-size:2.2rem;margin-bottom:10px}
+.qt-label{font-weight:700;font-size:.92rem;margin-bottom:3px}
+.qt-count{font-size:.74rem;color:var(--muted)}
+.qt-card.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+
+/* ═══════════════════════════ MCQ ═══════════════════════════ */
+.mcq-wrap{flex:1;padding:18px;max-width:780px;margin:0 auto;width:100%}
+.mcq-progress-wrap{height:5px;background:var(--card);border-radius:3px;margin-bottom:18px;overflow:hidden}
+.mcq-progress{height:100%;background:linear-gradient(90deg,var(--acc),var(--grn));border-radius:3px;transition:width .35s ease}
+.mcq-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mcq-counter{font-size:.78rem;color:var(--muted);font-family:var(--mono)}
+.mcq-score-live{font-size:.78rem;font-family:var(--mono);color:var(--grn);font-weight:700}
+.mcq-question{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r);
+  padding:20px;margin-bottom:18px;font-size:1rem;font-weight:600;line-height:1.6;
+  position:relative;
+}
+.mcq-qnum{
+  font-size:.65rem;font-weight:700;color:var(--acc);font-family:var(--mono);
+  margin-bottom:6px;letter-spacing:.5px;
+}
+.options{display:flex;flex-direction:column;gap:9px}
+.opt{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--rs);
+  padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  transition:all .15s;user-select:none;
+}
+.opt:hover:not(.locked){border-color:var(--acc);background:var(--acc-dim)}
+.opt-letter{
+  min-width:30px;height:30px;border-radius:7px;flex-shrink:0;
+  background:var(--card2);display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:700;font-family:var(--mono);transition:all .15s;
+}
+.opt-text{font-size:.9rem;font-weight:500;flex:1;min-width:0}
+.opt.correct{border-color:var(--grn);background:var(--grn-dim)}
+.opt.correct .opt-letter{background:var(--grn);color:#000}
+.opt.wrong{border-color:var(--red);background:var(--red-dim)}
+.opt.wrong .opt-letter{background:var(--red);color:#fff}
+.opt.locked{cursor:default}
+.mcq-nav{display:flex;gap:9px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap}
+.btn{
+  padding:10px 22px;border-radius:var(--rs);font-size:.88rem;font-weight:700;
+  cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-pri{background:var(--acc);color:#fff}.btn-pri:hover{background:#6a5dff;transform:translateY(-1px)}
+.btn-out{background:var(--card);border:1.5px solid var(--bdr);color:var(--txt)}
+.btn-out:hover{border-color:var(--acc);color:var(--acc)}
+.btn-grn{background:var(--grn);color:#000}.btn-grn:hover{background:#00b898}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* ═══════════════════════════ SCORE ═══════════════════════════ */
+.score-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 20px}
+.score-card{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:20px;
+  padding:40px;text-align:center;max-width:400px;width:100%;box-shadow:var(--sh2);
+}
+.score-ring{
+  width:120px;height:120px;border-radius:50%;
+  border:4px solid var(--acc);margin:0 auto 24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--acc-dim);position:relative;
+}
+.score-ring::before{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:2px dashed var(--bdr2);
+}
+.score-n{font-size:2.4rem;font-weight:800;color:var(--acc);line-height:1}
+.score-d{font-size:.82rem;color:var(--muted);margin-top:2px}
+.score-title{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.score-msg{color:var(--muted);font-size:.88rem;margin-bottom:8px}
+.score-pct{font-size:1rem;font-weight:700;margin-bottom:24px}
+.score-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+
+/* ═══════════════════════════ Q&A ═══════════════════════════ */
+.qa-wrap{flex:1;padding:18px;max-width:800px;margin:0 auto;width:100%}
+.qa-card{
+  background:var(--card);border:1.5px solid var(--bdr);
+  border-radius:var(--r);margin-bottom:13px;overflow:hidden;
+}
+.qa-q-row{
+  padding:16px 18px;cursor:pointer;display:flex;
+  justify-content:space-between;align-items:flex-start;gap:12px;
+  transition:background .15s;
+}
+.qa-q-row:hover{background:rgba(124,109,255,.04)}
+.qa-q-left{flex:1;min-width:0}
+.qa-qnum{font-size:.65rem;font-weight:700;color:var(--acc);font-family:var(--mono);margin-bottom:5px;letter-spacing:.5px}
+.qa-qtext{font-weight:600;font-size:.92rem;line-height:1.55;white-space:pre-wrap}
+.qa-chevron{color:var(--acc);font-size:1.1rem;flex-shrink:0;transition:transform .22s;margin-top:2px}
+.qa-chevron.open{transform:rotate(180deg)}
+.qa-answer{
+  display:none;padding:16px 18px;
+  border-top:1px solid rgba(124,109,255,.2);
+  background:rgba(124,109,255,.03);
+  font-size:.86rem;line-height:1.78;white-space:pre-wrap;color:var(--txt);
+}
+.qa-answer.visible{display:block}
+.qa-answer-label{
+  font-size:.65rem;font-weight:700;color:var(--grn);font-family:var(--mono);
+  letter-spacing:.5px;margin-bottom:8px;
+}
+
+/* ═══════════════════════════ PASSAGE ═══════════════════════════ */
+.passage-card{
+  background:var(--card2);border:1.5px solid var(--bdr2);
+  border-radius:var(--r);padding:18px;margin-bottom:16px;
+}
+.passage-label{font-size:.65rem;font-weight:700;color:var(--yel);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px}
+.passage-text{font-size:.88rem;line-height:1.8;color:var(--txt);white-space:pre-wrap;border-left:3px solid var(--yel);padding-left:14px}
+.passage-questions{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.pq-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rs);overflow:hidden}
+.pq-row{
+  padding:14px 16px;cursor:pointer;display:flex;
+  justify-content:space-between;align-items:flex-start;gap:12px;
+}
+.pq-text{font-weight:600;font-size:.88rem;line-height:1.5;white-space:pre-wrap}
+.pq-ans{display:none;padding:12px 16px;border-top:1px solid var(--bdr);background:rgba(0,201,167,.04);font-size:.84rem;line-height:1.75;white-space:pre-wrap}
+.pq-ans.visible{display:block}
+
+/* ═══════════════════════════ IMAGE PASSAGE ═══════════════════════════ */
+.imgp-card{
+  background:var(--card2);border:1.5px solid var(--bdr2);
+  border-radius:var(--r);padding:18px;margin-bottom:16px;
+}
+.imgp-label{font-size:.65rem;font-weight:700;color:var(--ora);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px}
+.imgp-img{
+  width:100%;max-width:560px;border-radius:var(--rs);
+  border:2px solid var(--bdr2);margin-bottom:14px;display:block;
+}
+.imgp-caption{font-size:.78rem;color:var(--muted);margin-bottom:14px;font-style:italic}
+.imgp-context{
+  font-size:.86rem;line-height:1.75;color:var(--txt);
+  border-left:3px solid var(--ora);padding-left:14px;margin-bottom:14px;
+  white-space:pre-wrap;
+}
+
+/* ═══════════════════════════ EMPTY ═══════════════════════════ */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+.empty-text{font-size:.9rem}
+
+
+/* ═══════════════════════════ IMAGE Q CARD ═══════════════════════════ */
+.imgq-wrap{border:1.5px solid var(--bdr2);border-radius:var(--r);overflow:hidden;margin-bottom:18px;background:var(--card2)}
+.imgq-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr2)}
+.imgq-badge{background:var(--ora-dim);color:var(--ora);border:1px solid var(--ora);border-radius:6px;padding:3px 9px;font-size:.68rem;font-weight:700;font-family:var(--mono);letter-spacing:.5px}
+.imgq-title{font-weight:700;font-size:.9rem;color:var(--txt)}
+.imgq-svg-wrap{padding:14px 16px;background:var(--sur);border-bottom:1px solid var(--bdr2)}
+.imgq-svg-wrap svg{width:100%;height:auto;display:block;border-radius:6px}
+.imgq-caption{font-size:.78rem;color:var(--muted);padding:8px 16px;border-bottom:1px solid var(--bdr2);font-style:italic;background:rgba(255,140,66,.04)}
+.imgq-body{padding:14px 16px}
+.imgq-q{font-weight:600;font-size:.9rem;line-height:1.6;white-space:pre-wrap;color:var(--txt);margin-bottom:12px}
+.imgq-reveal-btn{background:var(--grn-dim);border:1px solid var(--grn);color:var(--grn);padding:8px 16px;border-radius:var(--rs);cursor:pointer;font-size:.82rem;font-weight:700;transition:all .15s;font-family:var(--font);width:100%;text-align:left}
+.imgq-reveal-btn:hover{background:var(--grn);color:#000}
+.imgq-answer{display:none;margin-top:12px;padding:14px;background:rgba(0,201,167,.04);border:1px solid rgba(0,201,167,.2);border-radius:var(--rs);font-size:.85rem;line-height:1.78;white-space:pre-wrap;color:var(--txt)}
+.imgq-answer.visible{display:block}
+.imgq-ans-label{font-size:.65rem;font-weight:700;color:var(--grn);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px}
+
+/* ═══════════════════════════ TOAST ═══════════════════════════ */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1.5px solid var(--bdr);
+  border-radius:var(--r);padding:11px 20px;
+  font-size:.86rem;font-weight:600;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  z-index:999;white-space:nowrap;box-shadow:var(--sh2);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--grn);color:var(--grn)}
+.toast.err{border-color:var(--red);color:var(--red)}
+
+/* ═══════════════════════════ DIVIDER ═══════════════════════════ */
+.divider{height:1px;background:var(--bdr);margin:4px 0}
+
+/* ═══════════════════════════ STATS BAR ═══════════════════════════ */
+.stats-bar{
+  display:flex;gap:8px;padding:12px 18px 0;flex-wrap:wrap;
+}
+.stat-chip{
+  background:var(--card2);border:1px solid var(--bdr2);border-radius:var(--rx);
+  padding:4px 11px;font-size:.72rem;font-weight:600;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+}
+.stat-chip span{color:var(--acc)}
+
+/* ═══════════════════════════ RESPONSIVE ═══════════════════════════ */
+@media(max-width:480px){
+  .subject-grid{grid-template-columns:1fr 1fr;gap:10px;padding:13px}
+  .sub-card{padding:16px 13px}
+  .sub-icon{font-size:1.6rem;margin-bottom:8px}
+  .sub-name{font-size:.9rem}
+  .book-grid{grid-template-columns:1fr 1fr;padding:13px;gap:9px}
+  .hero{padding:36px 16px 20px}
+  .ch-list,.qa-wrap,.mcq-wrap{padding:12px 13px}
+  .search-wrap{padding:10px 13px 0}
+  .sec-head{padding:16px 13px 0}
+  .stats-bar{padding:10px 13px 0}
+}
+</style>
+</head>
+<body>
+
+<!-- ████████ HOME ████████ -->
+<div id="S-home" class="screen active">
+  <div class="topbar">
+    <div class="logo"><span class="hi">Class</span><span class="lo">10</span></div>
+    <div class="topbar-right" style="font-size:.72rem;color:var(--muted);font-weight:600">NCERT · OFFLINE</div>
+  </div>
+  <div class="hero">
+    <h1>Your <span class="c1">Complete</span><br>Class <span class="c2">10</span> Study App</h1>
+    <p>All 10 books · Every chapter · MCQ + Short + Long + Passage</p>
+    <div class="hero-pills">
+      <div class="pill">📐 Math</div><div class="pill">🔬 Science</div>
+      <div class="pill">📚 English</div><div class="pill">🌍 Social</div><div class="pill">⚽ HPE</div>
+    </div>
+  </div>
+  <div class="subject-grid" id="home-grid"></div>
+</div>
+
+<!-- ████████ BOOKS ████████ -->
+<div id="S-books" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <div class="breadcrumb" id="bc-books"></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-title" id="books-title"></div>
+    <div class="sec-sub">Select a book to study</div>
+  </div>
+  <div class="book-grid" id="books-grid"></div>
+</div>
+
+<!-- ████████ CHAPTERS ████████ -->
+<div id="S-chapters" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="breadcrumb" id="bc-chapters"></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-title" id="ch-title"></div>
+    <div class="sec-sub" id="ch-sub"></div>
+  </div>
+  <div class="stats-bar" id="ch-stats"></div>
+  <div class="search-wrap">
+    <input class="search-inp" id="ch-search" type="text" placeholder="🔍  Search chapters…" oninput="filterChapters()">
+  </div>
+  <div class="ch-list" id="ch-list"></div>
+</div>
+
+<!-- ████████ QUESTION TYPES ████████ -->
+<div id="S-qtypes" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="breadcrumb" id="bc-qtypes"></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-title" id="qt-ch-name"></div>
+    <div class="sec-sub">Choose question type</div>
+  </div>
+  <div class="qt-grid" id="qt-grid"></div>
+</div>
+
+<!-- ████████ MCQ ████████ -->
+<div id="S-mcq" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="breadcrumb" id="bc-mcq"></div>
+    <div class="topbar-right"><span class="mcq-score-live" id="mcq-live"></span></div>
+  </div>
+  <div class="mcq-wrap">
+    <div class="mcq-meta">
+      <div class="mcq-counter" id="mcq-ctr"></div>
+    </div>
+    <div class="mcq-progress-wrap"><div class="mcq-progress" id="mcq-pb"></div></div>
+    <div class="mcq-question" id="mcq-q"></div>
+    <div class="options" id="mcq-opts"></div>
+    <div class="mcq-nav">
+      <button class="btn btn-out" id="btn-prev" onclick="mcqPrev()">← Prev</button>
+      <button class="btn btn-pri" id="btn-next" onclick="mcqNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ████████ SCORE ████████ -->
+<div id="S-score" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="goBack()">← Back</button></div>
+  <div class="score-wrap">
+    <div class="score-card">
+      <div class="score-ring">
+        <div class="score-n" id="sc-n"></div>
+        <div class="score-d" id="sc-d"></div>
+      </div>
+      <div class="score-title" id="sc-title"></div>
+      <div class="score-msg" id="sc-msg"></div>
+      <div class="score-pct" id="sc-pct"></div>
+      <div class="score-actions">
+        <button class="btn btn-out" onclick="retryMCQ()">🔄 Retry</button>
+        <button class="btn btn-pri" onclick="goBack()">← Questions</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████████ WRITTEN Q&A (short / long) ████████ -->
+<div id="S-qa" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="breadcrumb" id="bc-qa"></div>
+    <div class="topbar-right">
+      <button class="btn btn-out" id="toggle-all-btn" onclick="toggleAll()"
+              style="font-size:.72rem;padding:6px 12px">Show All</button>
+    </div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-title" id="qa-title"></div>
+    <div class="sec-sub" id="qa-sub"></div>
+  </div>
+  <div class="qa-wrap" id="qa-list"></div>
+</div>
+
+<!-- ████████ PASSAGE / CASE-BASED ████████ -->
+<div id="S-passage" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="breadcrumb" id="bc-passage"></div>
+    <div class="topbar-right">
+      <button class="btn btn-out" id="passage-toggle-btn" onclick="togglePassageAll()"
+              style="font-size:.72rem;padding:6px 12px">Show All</button>
+    </div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-title" id="passage-title"></div>
+    <div class="sec-sub" id="passage-sub"></div>
+  </div>
+  <div class="qa-wrap" id="passage-list"></div>
+</div>
+
+<!-- ████████ IMAGE / DIAGRAM QUESTIONS ████████ -->
+<div id="S-image" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="breadcrumb" id="bc-image"></div>
+    <div class="topbar-right">
+      <button class="btn btn-out" id="image-toggle-btn" onclick="toggleImageAll()"
+              style="font-size:.72rem;padding:6px 12px">Show All</button>
+    </div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-title" id="image-title"></div>
+    <div class="sec-sub" id="image-sub"></div>
+  </div>
+  <div class="qa-wrap" id="image-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<script src="all_questions.js"></script>
+<script>
+/* ─────────────────────────── CONFIG ─────────────────────────── */
+const SUBJECTS = {
+  mathematics: {
+    label:'Mathematics', icon:'📐', color:'#7c6dff',
+    desc:'14 Chapters · Algebra, Geometry, Trigonometry & more',
+    books:[{key:'mathematics', label:'Mathematics', icon:'📐'}]
+  },
+  science: {
+    label:'Science', icon:'🔬', color:'#00c9a7',
+    desc:'13 Chapters · Physics, Chemistry & Biology',
+    books:[{key:'science', label:'Science', icon:'🔬'}]
+  },
+  english: {
+    label:'English', icon:'📚', color:'#ffcb47',
+    desc:'3 Books · Literature, Supplementary & Grammar',
+    books:[
+      {key:'english_ff', label:'First Flight',           icon:'✈️'},
+      {key:'english_fp', label:'Footprints Without Feet', icon:'👣'},
+      {key:'english_we', label:'Words & Expressions',    icon:'✍️'},
+    ]
+  },
+  social: {
+    label:'Social Science', icon:'🌍', color:'#ff8c42',
+    desc:'4 Books · History, Civics, Geography & Economics',
+    books:[
+      {key:'social_ci',   label:'Contemporary India',      icon:'🗺️'},
+      {key:'social_dp',   label:'Democratic Politics',      icon:'🏛️'},
+      {key:'social_hist', label:'India & the World',        icon:'📜'},
+      {key:'social_eco',  label:'Understanding Economics',  icon:'💰'},
+    ]
+  },
+  hpe: {
+    label:'Health & PE', icon:'⚽', color:'#ff5c5c',
+    desc:'13 Chapters · Health, Sports, Yoga & Fitness',
+    books:[{key:'hpe', label:'Health & Physical Education', icon:'🏃'}]
+  },
+};
+
+const QTYPES = [
+  {key:'mcq',     label:'MCQ Quiz',        icon:'🎯', color:'var(--acc)', desc:'Multiple choice · Instant feedback'},
+  {key:'short',   label:'Short Answer',    icon:'📝', color:'var(--grn)', desc:'2–3 mark questions'},
+  {key:'long',    label:'Long Answer',     icon:'📄', color:'var(--yel)', desc:'5 mark detailed answers'},
+  {key:'passage', label:'Passage / Case',  icon:'📖', color:'var(--ora)', desc:'Comprehension & case-based'},
+  {key:'image',   label:'Image / Diagram', icon:'🖼️', color:'var(--red)', desc:'Diagram & graph based'},
+];
+
+/* ─────────────────────────── STATE ─────────────────────────── */
+let ST = {
+  subKey:null, book:null, chapter:null, qtype:null,
+  hist:[],
+  mcqQs:[], mcqIdx:0, mcqAns:{}, mcqScore:0,
+};
+
+/* ─────────────────────────── NAVIGATION ─────────────────────────── */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('S-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function nav(id,push=true){ if(push) ST.hist.push(id); show(id); }
+function goHome(){ ST.hist=['home']; buildHome(); show('home'); }
+function goBack(){
+  if(ST.hist.length>1){
+    ST.hist.pop();
+    const prev=ST.hist[ST.hist.length-1];
+    redraw(prev); show(prev);
+  } else goHome();
+}
+function redraw(id){
+  if(id==='home') buildHome();
+  else if(id==='books') buildBooks();
+  else if(id==='chapters') buildChapters();
+  else if(id==='qtypes') buildQTypes();
+  else if(id==='mcq') startMCQ();
+  else if(id==='qa') buildQA();
+  else if(id==='passage') buildPassage();
+  else if(id==='image') buildImageQs();
+}
+
+/* ─────────────────────────── HOME ─────────────────────────── */
+function buildHome(){
+  const g = document.getElementById('home-grid');
+  g.innerHTML = Object.entries(SUBJECTS).map(([k,s])=>`
+    <div class="sub-card" style="--c:${s.color}" onclick="openSubject('${k}')">
+      <div class="sub-stripe"></div>
+      <span class="sub-icon">${s.icon}</span>
+      <div class="sub-name">${s.label}</div>
+      <div class="sub-desc">${s.desc}</div>
+      <div class="sub-meta">
+        <div class="sub-tag">${s.books.length>1 ? s.books.length+' Books' : 'View Chapters'}</div>
+        <div class="sub-arr">→</div>
+      </div>
+    </div>`).join('');
+}
+
+function openSubject(k){
+  ST.subKey=k; ST.hist=['home'];
+  const sub = SUBJECTS[k];
+  if(sub.books.length===1){
+    ST.book = sub.books[0];
+    nav('chapters'); buildChapters();
+  } else {
+    nav('books'); buildBooks();
+  }
+}
+
+/* ─────────────────────────── BOOKS ─────────────────────────── */
+function buildBooks(){
+  const sub = SUBJECTS[ST.subKey];
+  document.getElementById('books-title').textContent = sub.label;
+  document.getElementById('bc-books').innerHTML =
+    `<span>${sub.icon} ${sub.label}</span>`;
+
+  document.getElementById('books-grid').innerHTML = sub.books.map((b,i)=>{
+    const cnt = ALL_QUESTIONS[b.key] ? Object.keys(ALL_QUESTIONS[b.key]).length : 0;
+    return `
+      <div class="book-card" style="--c:${sub.color}" onclick="openBook(${i})">
+        <div class="book-stripe"></div>
+        <div class="book-icon">${b.icon}</div>
+        <div class="book-name">${b.label}</div>
+        <div class="book-cnt">${cnt} chapters</div>
+      </div>`;
+  }).join('');
+}
+
+function openBook(i){
+  ST.book = SUBJECTS[ST.subKey].books[i];
+  nav('chapters'); buildChapters();
+}
+
+/* ─────────────────────────── CHAPTERS ─────────────────────────── */
+let _chapters = [];
+
+function buildChapters(){
+  const sub = SUBJECTS[ST.subKey], b = ST.book;
+  document.getElementById('ch-title').textContent = b.label;
+  document.getElementById('ch-sub').textContent = 'Select a chapter to practise';
+
+  // breadcrumb
+  const multi = sub.books.length > 1;
+  document.getElementById('bc-chapters').innerHTML = `
+    <span class="crumb" onclick="goHome()">Home</span><span class="sep">›</span>
+    ${multi ? `<span class="crumb" onclick="goBack()">${sub.label}</span><span class="sep">›</span>` : ''}
+    <span>${b.label}</span>`;
+
+  _chapters = Object.keys(ALL_QUESTIONS[b.key]||{});
+
+  // stats
+  const totalQ = _chapters.reduce((acc,ch)=>{
+    const d = ALL_QUESTIONS[b.key][ch];
+    return acc + (d.mcq||[]).length + (d.short||[]).length + (d.long||[]).length + (d.passage||[]).length;
+  },0);
+  document.getElementById('ch-stats').innerHTML = `
+    <div class="stat-chip">📚 <span>${_chapters.length}</span> Chapters</div>
+    <div class="stat-chip">❓ <span>${totalQ}</span> Total Questions</div>`;
+
+  document.getElementById('ch-search').value = '';
+  renderChList(_chapters);
+}
+
+function renderChList(list){
+  const el = document.getElementById('ch-list');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No chapters found</div></div>';
+    return;
+  }
+  const bk = ST.book.key;
+  el.innerHTML = list.map((ch,i)=>{
+    const d = (ALL_QUESTIONS[bk]||{})[ch]||{};
+    const badges = [
+      d.mcq?.length    ? `${d.mcq.length} MCQ`  : '',
+      d.short?.length  ? `${d.short.length} SA`  : '',
+      d.long?.length   ? `${d.long.length} LA`   : '',
+      d.passage?.length? `${d.passage.length} PA`: '',
+    ].filter(Boolean);
+    return `
+      <div class="ch-item" onclick="openChapter(${JSON.stringify(ch)})">
+        <div class="ch-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="ch-name">${ch}</div>
+        <div class="ch-badges">${badges.map(b=>`<span class="ch-badge">${b}</span>`).join('')}</div>
+        <div class="ch-arr">›</div>
+      </div>`;
+  }).join('');
+}
+
+function filterChapters(){
+  const q = document.getElementById('ch-search').value.toLowerCase();
+  renderChList(_chapters.filter(c=>c.toLowerCase().includes(q)));
+}
+
+function openChapter(ch){
+  ST.chapter = ch;
+  nav('qtypes'); buildQTypes();
+}
+
+/* ─────────────────────────── QTYPES ─────────────────────────── */
+function buildQTypes(){
+  const sub = SUBJECTS[ST.subKey], b = ST.book, ch = ST.chapter;
+  document.getElementById('qt-ch-name').textContent = ch;
+
+  const multi = sub.books.length > 1;
+  document.getElementById('bc-qtypes').innerHTML = `
+    <span class="crumb" onclick="goHome()">Home</span><span class="sep">›</span>
+    ${multi ? `<span class="crumb" onclick="()=>{ST.hist.pop();goBack()}">${b.label}</span><span class="sep">›</span>` : ''}
+    <span class="crumb" onclick="goBack()">${b.label}</span><span class="sep">›</span>
+    <span>${trunc(ch,28)}</span>`;
+
+  const data = (ALL_QUESTIONS[b.key]||{})[ch]||{};
+  document.getElementById('qt-grid').innerHTML = QTYPES.map(qt=>{
+    const qs = data[qt.key]||[];
+    const empty = !qs.length;
+    return `
+      <div class="qt-card${empty?' disabled':''}" style="--c:${qt.color}" onclick="${empty?'':``openQType('${qt.key}')``}">
+        <div class="qt-icon">${qt.icon}</div>
+        <div class="qt-label">${qt.label}</div>
+        <div class="qt-count">${empty ? 'Not available' : qs.length+' question'+(qs.length!==1?'s':'')}</div>
+      </div>`;
+  }).join('');
+}
+
+function openQType(qt){
+  ST.qtype = qt;
+  if(qt==='mcq'){ nav('mcq'); startMCQ(); }
+  else if(qt==='passage'){ nav('passage'); buildPassage(); }
+  else if(qt==='image'){ nav('image'); buildImageQs(); }
+  else { nav('qa'); buildQA(); }
+}
+
+/* ─────────────────────────── MCQ ENGINE ─────────────────────────── */
+function startMCQ(){
+  const data = (ALL_QUESTIONS[ST.book.key]||{})[ST.chapter]||{};
+  ST.mcqQs  = data.mcq||[];
+  ST.mcqIdx = 0; ST.mcqAns = {}; ST.mcqScore = 0;
+
+  document.getElementById('bc-mcq').innerHTML = `
+    <span class="crumb" onclick="goHome()">Home</span><span class="sep">›</span>
+    <span class="crumb" onclick="goBack()">${trunc(ST.chapter,24)}</span><span class="sep">›</span>
+    <span>MCQ Quiz</span>`;
+
+  drawMCQ();
+}
+
+function drawMCQ(){
+  const total = ST.mcqQs.length, idx = ST.mcqIdx;
+  if(!total){ nav('score',false); drawScore(); return; }
+
+  const q = ST.mcqQs[idx];
+  const answered = ST.mcqAns[idx] !== undefined;
+  const done = Object.keys(ST.mcqAns).length;
+
+  document.getElementById('mcq-ctr').textContent = `Question ${idx+1} of ${total}`;
+  document.getElementById('mcq-pb').style.width = `${((idx+1)/total)*100}%`;
+  document.getElementById('mcq-live').textContent = done ? `✓ ${ST.mcqScore}/${done}` : '';
+
+  document.getElementById('mcq-q').innerHTML =
+    `<div class="mcq-qnum">Q${idx+1}</div>${esc(q.q)}`;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('mcq-opts').innerHTML = q.opts.map((o,i)=>{
+    let cls = 'opt';
+    if(answered){
+      cls += ' locked';
+      if(i===q.ans) cls += ' correct';
+      else if(i===ST.mcqAns[idx]) cls += ' wrong';
+    }
+    return `
+      <div class="${cls}" onclick="${answered?'':'pickOpt('+i+')'}">
+        <div class="opt-letter">${L[i]}</div>
+        <div class="opt-text">${esc(o)}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('btn-prev').disabled = idx===0;
+  const nb = document.getElementById('btn-next');
+  nb.textContent = idx===total-1 ? 'Finish ✓' : 'Next →';
+  nb.disabled = !answered;
+}
+
+function pickOpt(i){
+  if(ST.mcqAns[ST.mcqIdx] !== undefined) return;
+  ST.mcqAns[ST.mcqIdx] = i;
+  const correct = i === ST.mcqQs[ST.mcqIdx].ans;
+  if(correct){ ST.mcqScore++; showToast('✅ Correct!','ok'); }
+  else showToast('❌ Wrong! Answer: '+['A','B','C','D'][ST.mcqQs[ST.mcqIdx].ans],'err');
+  drawMCQ();
+}
+
+function mcqNext(){
+  if(ST.mcqIdx < ST.mcqQs.length-1){ ST.mcqIdx++; drawMCQ(); }
+  else { nav('score'); drawScore(); }
+}
+function mcqPrev(){ if(ST.mcqIdx>0){ ST.mcqIdx--; drawMCQ(); } }
+
+function drawScore(){
+  const t=ST.mcqQs.length, s=ST.mcqScore, p=t?Math.round(s/t*100):0;
+  document.getElementById('sc-n').textContent = s;
+  document.getElementById('sc-d').textContent = '/ '+t;
+  document.getElementById('sc-title').textContent =
+    p>=90?'🏆 Outstanding!':p>=75?'🥇 Excellent!':p>=60?'👍 Good Job!':p>=40?'📚 Keep Going!':'💪 Study More!';
+  document.getElementById('sc-msg').textContent = ST.chapter;
+  document.getElementById('sc-pct').textContent = `${p}% · ${s} correct out of ${t}`;
+
+  // colour ring
+  const ring = document.querySelector('.score-ring');
+  const col = p>=75?'var(--grn)':p>=40?'var(--yel)':'var(--red)';
+  ring.style.borderColor = col;
+  ring.style.background = p>=75?'var(--grn-dim)':p>=40?'var(--yel-dim)':'var(--red-dim)';
+  document.querySelector('.score-n').style.color = col;
+}
+
+function retryMCQ(){ nav('mcq',false); startMCQ(); }
+
+/* ─────────────────────────── SHORT / LONG Q&A ─────────────────────────── */
+let _qaAllVisible = false;
+
+function buildQA(){
+  const qt=ST.qtype, ch=ST.chapter, bk=ST.book.key;
+  const data = (ALL_QUESTIONS[bk]||{})[ch]||{};
+  const qs = data[qt]||[];
+  _qaAllVisible = false;
+  document.getElementById('toggle-all-btn').textContent = 'Show All';
+
+  const labels = {short:'Short Answer Questions',long:'Long Answer Questions'};
+  const icons  = {short:'📝',long:'📄'};
+  const marks  = {short:'(2–3 marks each)',long:'(5 marks each)'};
+
+  document.getElementById('qa-title').textContent = ch;
+  document.getElementById('qa-sub').textContent =
+    `${icons[qt]} ${labels[qt]} ${marks[qt]} · ${qs.length} question${qs.length!==1?'s':''}`;
+
+  document.getElementById('bc-qa').innerHTML = `
+    <span class="crumb" onclick="goHome()">Home</span><span class="sep">›</span>
+    <span class="crumb" onclick="goBack()">${trunc(ch,22)}</span><span class="sep">›</span>
+    <span>${labels[qt]}</span>`;
+
+  const wrap = document.getElementById('qa-list');
+  if(!qs.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No questions available</div></div>';
+    return;
+  }
+
+  wrap.innerHTML = qs.map((item,i)=>`
+    <div class="qa-card">
+      <div class="qa-q-row" onclick="togQA(${i})">
+        <div class="qa-q-left">
+          <div class="qa-qnum">Q${i+1} · ${qt==='short'?'Short':'Long'} Answer</div>
+          <div class="qa-qtext">${esc(item.q)}</div>
+        </div>
+        <div class="qa-chevron" id="qach-${i}">⌄</div>
+      </div>
+      <div class="qa-answer" id="qaa-${i}">
+        <div class="qa-answer-label">▸ ANSWER</div>
+        ${esc(item.a)}
+      </div>
+    </div>`).join('');
+}
+
+function togQA(i){
+  const a=document.getElementById('qaa-'+i);
+  const c=document.getElementById('qach-'+i);
+  const v=a.classList.toggle('visible');
+  c.classList.toggle('open',v);
+}
+
+function toggleAll(){
+  _qaAllVisible = !_qaAllVisible;
+  document.getElementById('toggle-all-btn').textContent = _qaAllVisible?'Hide All':'Show All';
+  document.querySelectorAll('.qa-answer').forEach((el,i)=>{
+    el.classList.toggle('visible',_qaAllVisible);
+    const c=document.getElementById('qach-'+i);
+    if(c) c.classList.toggle('open',_qaAllVisible);
+  });
+}
+
+/* ─────────────────────────── PASSAGE / CASE-BASED ─────────────────────────── */
+let _passAllVisible = false;
+
+function buildPassage(){
+  const ch=ST.chapter, bk=ST.book.key;
+  const data = (ALL_QUESTIONS[bk]||{})[ch]||{};
+  const qs = data.passage||[];
+  _passAllVisible = false;
+  document.getElementById('passage-toggle-btn').textContent = 'Show All';
+
+  document.getElementById('passage-title').textContent = ch;
+  document.getElementById('passage-sub').textContent =
+    `📖 Passage / Case-Based Questions · ${qs.length} question${qs.length!==1?'s':''}`;
+
+  document.getElementById('bc-passage').innerHTML = `
+    <span class="crumb" onclick="goHome()">Home</span><span class="sep">›</span>
+    <span class="crumb" onclick="goBack()">${trunc(ch,22)}</span><span class="sep">›</span>
+    <span>Passage / Case</span>`;
+
+  const wrap = document.getElementById('passage-list');
+  if(!qs.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No passage questions available</div></div>';
+    return;
+  }
+
+  // Each passage item has q (which contains the passage + sub-questions) and a (the full answer)
+  // We render each as a structured card
+  wrap.innerHTML = qs.map((item,i)=>{
+    // Try to split passage from questions in the q field
+    // Pattern: passage text above, then sub-questions (a), (b), (c)...
+    const qText = item.q || '';
+    const aText = item.a || '';
+
+    // Split the question into passage portion and sub-questions
+    const subqMatch = qText.match(/^([\s\S]*?)(\n\s*\(a\)[\s\S]*)$/);
+    const hasSubQ = subqMatch && subqMatch[2];
+    const passageBody = hasSubQ ? subqMatch[1].trim() : qText.trim();
+    const subQBody    = hasSubQ ? subqMatch[2].trim() : '';
+
+    // Split answers by (a), (b), (c), (d)
+    const subAs = aText.split(/\n(?=\((?:[a-d])\))/i).filter(Boolean);
+
+    return `
+      <div class="imgp-card" id="passage-card-${i}">
+        <div class="imgp-label">📖 PASSAGE / CASE STUDY ${i+1}</div>
+        <div class="imgp-context">${esc(passageBody)}</div>
+        ${subQBody ? `
+        <div class="passage-questions">
+          <div style="font-size:.72rem;font-weight:700;color:var(--yel);font-family:var(--mono);letter-spacing:.5px;margin-bottom:6px">▸ QUESTIONS</div>
+          <div style="background:var(--card);border:1px solid var(--bdr);border-radius:var(--rs);padding:13px 15px;font-size:.88rem;line-height:1.7;white-space:pre-wrap">${esc(subQBody)}</div>
+        </div>` : ''}
+        <div style="margin-top:12px">
+          <div class="pq-item">
+            <div class="pq-row" onclick="togPassage(${i})">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:.7rem;font-weight:700;color:var(--grn);font-family:var(--mono)">▸ ANSWER</span>
+                <span style="font-size:.82rem;font-weight:600;color:var(--muted)">Tap to reveal</span>
+              </div>
+              <div class="qa-chevron" id="pach-${i}">⌄</div>
+            </div>
+            <div class="pq-ans" id="paa-${i}">
+              <div style="font-size:.65rem;font-weight:700;color:var(--grn);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px">▸ DETAILED ANSWER</div>
+              ${esc(aText)}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function togPassage(i){
+  const a=document.getElementById('paa-'+i);
+  const c=document.getElementById('pach-'+i);
+  const v=a.classList.toggle('visible');
+  c.classList.toggle('open',v);
+}
+
+function togglePassageAll(){
+  _passAllVisible = !_passAllVisible;
+  document.getElementById('passage-toggle-btn').textContent = _passAllVisible?'Hide All':'Show All';
+  document.querySelectorAll('.pq-ans').forEach((el,i)=>{
+    el.classList.toggle('visible',_passAllVisible);
+    const c=document.getElementById('pach-'+i);
+    if(c) c.classList.toggle('open',_passAllVisible);
+  });
+}
+
+/* ─────────────────────────── UTILS ─────────────────────────── */
+function esc(s){
+  return (s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+function trunc(s,n){ return s && s.length>n ? s.slice(0,n)+'…' : s; }
+
+let _toastTimer;
+function showToast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type?' '+type:'');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>{ t.className='toast'; },2000);
+}
+
+/* ─────────────────────────── IMAGE / DIAGRAM Q&A ─────────────────────────── */
+let _imgAllVisible = false;
+
+function buildImageQs(){
+  const ch=ST.chapter, bk=ST.book.key;
+  const data = (ALL_QUESTIONS[bk]||{})[ch]||{};
+  const qs = data.image||[];
+  _imgAllVisible = false;
+  document.getElementById('image-toggle-btn').textContent = 'Show All';
+
+  document.getElementById('image-title').textContent = ch;
+  document.getElementById('image-sub').textContent =
+    `🖼️ Image / Diagram Based Questions · ${qs.length} question${qs.length!==1?'s':''}`;
+
+  document.getElementById('bc-image').innerHTML = `
+    <span class="crumb" onclick="goHome()">Home</span><span class="sep">›</span>
+    <span class="crumb" onclick="goBack()">${trunc(ch,22)}</span><span class="sep">›</span>
+    <span>Image Questions</span>`;
+
+  const wrap = document.getElementById('image-list');
+  if(!qs.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">🖼️</div><div class="empty-text">No image-based questions for this chapter</div></div>';
+    return;
+  }
+
+  wrap.innerHTML = qs.map((item,i)=>`
+    <div class="imgq-wrap">
+      <div class="imgq-header">
+        <span class="imgq-badge">🖼️ DIAGRAM Q${i+1}</span>
+        <span class="imgq-title">Image / Diagram Based Question</span>
+      </div>
+      <div class="imgq-svg-wrap">${item.svg||''}</div>
+      <div class="imgq-caption">${esc(item.caption||'')}</div>
+      <div class="imgq-body">
+        <div class="imgq-q">${esc(item.q)}</div>
+        <button class="imgq-reveal-btn" id="imgbtn-${i}" onclick="togImgAns(${i})">
+          ▸ Show Answer
+        </button>
+        <div class="imgq-answer" id="imga-${i}">
+          <div class="imgq-ans-label">▸ DETAILED ANSWER</div>
+          ${esc(item.a)}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function togImgAns(i){
+  const a = document.getElementById('imga-'+i);
+  const btn = document.getElementById('imgbtn-'+i);
+  const v = a.classList.toggle('visible');
+  btn.textContent = v ? '▸ Hide Answer' : '▸ Show Answer';
+}
+
+function toggleImageAll(){
+  _imgAllVisible = !_imgAllVisible;
+  document.getElementById('image-toggle-btn').textContent = _imgAllVisible?'Hide All':'Show All';
+  document.querySelectorAll('.imgq-answer').forEach((el,i)=>{
+    el.classList.toggle('visible',_imgAllVisible);
+    const btn=document.getElementById('imgbtn-'+i);
+    if(btn) btn.textContent = _imgAllVisible?'▸ Hide Answer':'▸ Show Answer';
+  });
+}
+
+/* ─────────────────────────── INIT ─────────────────────────── */
+buildHome();
+</script>
+</body>
+</html>
